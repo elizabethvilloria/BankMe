@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BankMe - Personal Finance Manager</title>
     <link rel="stylesheet" href="styles.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
@@ -13,7 +12,7 @@
         <!-- Header -->
         <header class="header">
             <h1>BankMe 💳</h1>
-            <p>Get your finances in order</p>
+            <p>Keep track of your credit cards and finances</p>
         </header>
 
         <!-- Navigation -->
@@ -42,15 +41,15 @@
                         <p class="amount" id="utilization">0%</p>
                     </div>
                     <div class="card summary-card">
-                        <h3>Cards Due This Month</h3>
-                        <p class="amount" id="cards-due">0</p>
+                        <h3>Upcoming Payments</h3>
+                        <p class="amount" id="upcoming-payments">0</p>
                     </div>
                 </div>
-
+                
                 <div class="charts-section">
                     <div class="card">
-                        <h3>Credit Utilization by Card</h3>
-                        <canvas id="utilization-chart"></canvas>
+                        <h3>Credit Card Balances</h3>
+                        <canvas id="balance-chart"></canvas>
                     </div>
                     <div class="card">
                         <h3>Monthly Spending</h3>
@@ -67,42 +66,7 @@
                 </div>
                 
                 <div class="cards-grid" id="cards-container">
-                    <!-- Cards will be populated here -->
-                </div>
-
-                <!-- Add Card Modal -->
-                <div id="add-card-modal" class="modal">
-                    <div class="modal-content">
-                        <span class="close">&times;</span>
-                        <h3>Add New Credit Card</h3>
-                        <form id="add-card-form">
-                            <div class="form-group">
-                                <label for="card-name">Card Name</label>
-                                <input type="text" id="card-name" required>
-                            </div>
-                            <div class="form-group">
-                                <label for="bank-name">Bank Name</label>
-                                <input type="text" id="bank-name" required>
-                            </div>
-                            <div class="form-group">
-                                <label for="credit-limit">Credit Limit</label>
-                                <input type="number" id="credit-limit" required>
-                            </div>
-                            <div class="form-group">
-                                <label for="current-balance">Current Balance</label>
-                                <input type="number" id="current-balance" required>
-                            </div>
-                            <div class="form-group">
-                                <label for="due-date">Due Date</label>
-                                <input type="date" id="due-date" required>
-                            </div>
-                            <div class="form-group">
-                                <label for="interest-rate">Interest Rate (%)</label>
-                                <input type="number" id="interest-rate" step="0.01" required>
-                            </div>
-                            <button type="submit" class="btn btn-primary">Add Card</button>
-                        </form>
-                    </div>
+                    <!-- Cards will be added here dynamically -->
                 </div>
             </div>
 
@@ -114,7 +78,7 @@
                 </div>
                 
                 <div class="expenses-list" id="expenses-container">
-                    <!-- Expenses will be populated here -->
+                    <!-- Expenses will be added here dynamically -->
                 </div>
             </div>
 
@@ -132,7 +96,7 @@
                     </div>
                     <div class="card">
                         <h3>Spent This Month</h3>
-                        <p class="amount" id="spent-this-month">$0</p>
+                        <p class="amount" id="monthly-spent">$0</p>
                     </div>
                     <div class="card">
                         <h3>Remaining</h3>
@@ -141,6 +105,48 @@
                 </div>
             </div>
         </main>
+    </div>
+
+    <!-- Modals -->
+    <div id="modal-overlay" class="modal-overlay hidden">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 id="modal-title">Add New Card</h3>
+                <button class="close-btn" id="close-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="card-form">
+                    <div class="form-group">
+                        <label for="card-name">Card Name</label>
+                        <input type="text" id="card-name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="bank-name">Bank Name</label>
+                        <input type="text" id="bank-name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="credit-limit">Credit Limit</label>
+                        <input type="number" id="credit-limit" step="0.01" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="current-balance">Current Balance</label>
+                        <input type="number" id="current-balance" step="0.01" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="due-date">Due Date</label>
+                        <input type="date" id="due-date" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="interest-rate">Interest Rate (%)</label>
+                        <input type="number" id="interest-rate" step="0.01" required>
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-secondary" id="cancel-btn">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Save Card</button>
+                    </div>
+                </form>
+            </div>
+        </div>
     </div>
 
     <script src="app.js"></script>
