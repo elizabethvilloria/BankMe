@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BankMe - Personal Finance Manager</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <h1>BankMe 💳</h1>
+            <p>Get your finances in order</p>
+        </header>
+
+        <!-- Navigation -->
+        <nav class="nav">
+            <button class="nav-btn active" data-tab="dashboard">Dashboard</button>
+            <button class="nav-btn" data-tab="cards">Credit Cards</button>
+            <button class="nav-btn" data-tab="expenses">Expenses</button>
+            <button class="nav-btn" data-tab="budget">Budget</button>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Dashboard Tab -->
+            <div id="dashboard" class="tab-content active">
+                <div class="dashboard-grid">
+                    <div class="card summary-card">
+                        <h3>Total Credit Limit</h3>
+                        <p class="amount" id="total-limit">$0</p>
+                    </div>
+                    <div class="card summary-card">
+                        <h3>Total Balance</h3>
+                        <p class="amount" id="total-balance">$0</p>
+                    </div>
+                    <div class="card summary-card">
+                        <h3>Credit Utilization</h3>
+                        <p class="amount" id="utilization">0%</p>
+                    </div>
+                    <div class="card summary-card">
+                        <h3>Cards Due This Month</h3>
+                        <p class="amount" id="cards-due">0</p>
+                    </div>
+                </div>
+
+                <div class="charts-section">
+                    <div class="card">
+                        <h3>Credit Utilization by Card</h3>
+                        <canvas id="utilization-chart"></canvas>
+                    </div>
+                    <div class="card">
+                        <h3>Monthly Spending</h3>
+                        <canvas id="spending-chart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Credit Cards Tab -->
+            <div id="cards" class="tab-content">
+                <div class="tab-header">
+                    <h2>Credit Cards</h2>
+                    <button class="btn btn-primary" id="add-card-btn">Add New Card</button>
+                </div>
+                
+                <div class="cards-grid" id="cards-container">
+                    <!-- Cards will be populated here -->
+                </div>
+
+                <!-- Add Card Modal -->
+                <div id="add-card-modal" class="modal">
+                    <div class="modal-content">
+                        <span class="close">&times;</span>
+                        <h3>Add New Credit Card</h3>
+                        <form id="add-card-form">
+                            <div class="form-group">
+                                <label for="card-name">Card Name</label>
+                                <input type="text" id="card-name" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="bank-name">Bank Name</label>
+                                <input type="text" id="bank-name" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="credit-limit">Credit Limit</label>
+                                <input type="number" id="credit-limit" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="current-balance">Current Balance</label>
+                                <input type="number" id="current-balance" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="due-date">Due Date</label>
+                                <input type="date" id="due-date" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="interest-rate">Interest Rate (%)</label>
+                                <input type="number" id="interest-rate" step="0.01" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Add Card</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Expenses Tab -->
+            <div id="expenses" class="tab-content">
+                <div class="tab-header">
+                    <h2>Expenses</h2>
+                    <button class="btn btn-primary" id="add-expense-btn">Add Expense</button>
+                </div>
+                
+                <div class="expenses-list" id="expenses-container">
+                    <!-- Expenses will be populated here -->
+                </div>
+            </div>
+
+            <!-- Budget Tab -->
+            <div id="budget" class="tab-content">
+                <div class="tab-header">
+                    <h2>Budget Planning</h2>
+                    <button class="btn btn-primary" id="set-budget-btn">Set Budget</button>
+                </div>
+                
+                <div class="budget-overview">
+                    <div class="card">
+                        <h3>Monthly Budget</h3>
+                        <p class="amount" id="monthly-budget">$0</p>
+                    </div>
+                    <div class="card">
+                        <h3>Spent This Month</h3>
+                        <p class="amount" id="spent-this-month">$0</p>
+                    </div>
+                    <div class="card">
+                        <h3>Remaining</h3>
+                        <p class="amount" id="budget-remaining">$0</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html> 
