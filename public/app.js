@@ -103,6 +103,17 @@ class BankMeApp {
         document.getElementById('utilization').textContent = `${utilization}%`;
         document.getElementById('upcoming-payments').textContent = upcomingPayments;
 
+        // Add utilization status to dashboard
+        const utilizationElement = document.getElementById('utilization');
+        utilizationElement.className = 'amount';
+        if (utilization > 30) {
+            utilizationElement.classList.add('high-utilization');
+        } else if (utilization > 10) {
+            utilizationElement.classList.add('medium-utilization');
+        } else {
+            utilizationElement.classList.add('low-utilization');
+        }
+
         this.updateCharts();
     }
 
@@ -200,6 +211,8 @@ class BankMeApp {
         
         const utilization = ((parseFloat(card.current_balance) / parseFloat(card.credit_limit)) * 100).toFixed(1);
         const dueDate = new Date(card.due_date).toLocaleDateString();
+        const isOverLimit = parseFloat(card.current_balance) > parseFloat(card.credit_limit);
+        const utilizationClass = this.getUtilizationClass(utilization);
         
         div.innerHTML = `
             <div class="card-header">
@@ -207,18 +220,21 @@ class BankMeApp {
                 <button class="delete-btn" onclick="app.deleteCard(${card.id})" title="Delete card">×</button>
             </div>
             <div class="bank">${card.bank_name}</div>
+            <div class="utilization-status ${utilizationClass}">
+                ${isOverLimit ? '⚠️ OVER LIMIT' : `${utilization}% Used`}
+            </div>
             <div class="details">
                 <div class="detail">
                     <div class="detail-label">Balance</div>
-                    <div class="detail-value">$${parseFloat(card.current_balance).toLocaleString()}</div>
+                    <div class="detail-value ${isOverLimit ? 'over-limit' : ''}">$${parseFloat(card.current_balance).toLocaleString()}</div>
                 </div>
                 <div class="detail">
                     <div class="detail-label">Limit</div>
                     <div class="detail-value">$${parseFloat(card.credit_limit).toLocaleString()}</div>
                 </div>
                 <div class="detail">
-                    <div class="detail-label">Utilization</div>
-                    <div class="detail-value">${utilization}%</div>
+                    <div class="detail-label">Available</div>
+                    <div class="detail-value ${isOverLimit ? 'over-limit' : ''}">$${Math.max(0, parseFloat(card.credit_limit) - parseFloat(card.current_balance)).toLocaleString()}</div>
                 </div>
                 <div class="detail">
                     <div class="detail-label">Due Date</div>
@@ -228,6 +244,14 @@ class BankMeApp {
         `;
         
         return div;
+    }
+
+    getUtilizationClass(utilization) {
+        const util = parseFloat(utilization);
+        if (util > 90) return 'critical';
+        if (util > 70) return 'high';
+        if (util > 30) return 'medium';
+        return 'low';
     }
 
     async deleteCard(cardId) {
