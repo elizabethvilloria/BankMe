@@ -110,7 +110,12 @@ class BankMeApp {
         // Balance Chart
         const balanceCtx = document.getElementById('balance-chart');
         if (balanceCtx) {
-            new Chart(balanceCtx, {
+            // Destroy existing chart if it exists
+            if (window.balanceChart) {
+                window.balanceChart.destroy();
+            }
+            
+            window.balanceChart = new Chart(balanceCtx, {
                 type: 'doughnut',
                 data: {
                     labels: this.cards.map(card => card.card_name),
@@ -141,7 +146,12 @@ class BankMeApp {
         // Spending Chart (placeholder for now)
         const spendingCtx = document.getElementById('spending-chart');
         if (spendingCtx) {
-            new Chart(spendingCtx, {
+            // Destroy existing chart if it exists
+            if (window.spendingChart) {
+                window.spendingChart.destroy();
+            }
+            
+            window.spendingChart = new Chart(spendingCtx, {
                 type: 'bar',
                 data: {
                     labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
@@ -239,36 +249,63 @@ class BankMeApp {
         document.getElementById('card-form').reset();
     }
 
-    addCard() {
-        const formData = new FormData(document.getElementById('card-form'));
-        const card = {
-            id: Date.now(),
+    async addCard() {
+        const cardData = {
             card_name: document.getElementById('card-name').value,
             bank_name: document.getElementById('bank-name').value,
-            credit_limit: document.getElementById('credit-limit').value,
-            current_balance: document.getElementById('current-balance').value,
+            credit_limit: parseFloat(document.getElementById('credit-limit').value),
+            current_balance: parseFloat(document.getElementById('current-balance').value),
             due_date: document.getElementById('due-date').value,
-            interest_rate: document.getElementById('interest-rate').value,
-            created_at: new Date().toISOString()
+            interest_rate: parseFloat(document.getElementById('interest-rate').value)
         };
 
-        this.cards.push(card);
-        this.saveData();
-        this.hideModal();
-        this.updateTabContent();
-        
-        // Show success message
-        this.showNotification('Credit card added successfully!', 'success');
+        try {
+            const response = await fetch('/api/cards', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(cardData)
+            });
+
+            if (response.ok) {
+                const newCard = await response.json();
+                this.cards.push(newCard);
+                this.hideModal();
+                this.updateTabContent();
+                this.showNotification('Credit card added successfully!', 'success');
+            } else {
+                throw new Error('Failed to add card');
+            }
+        } catch (error) {
+            console.error('Error adding card:', error);
+            this.showNotification('Failed to add card. Please try again.', 'error');
+        }
     }
 
-    loadData() {
+    async loadData() {
+        try {
+            const response = await fetch('/api/cards');
+            if (response.ok) {
+                this.cards = await response.json();
+            } else {
+                console.error('Failed to load cards from API, using localStorage as fallback');
+                this.loadFromLocalStorage();
+            }
+        } catch (error) {
+            console.error('Error loading data from API:', error);
+            this.loadFromLocalStorage();
+        }
+    }
+
+    loadFromLocalStorage() {
         const savedCards = localStorage.getItem('bankme_cards');
         if (savedCards) {
             this.cards = JSON.parse(savedCards);
         }
     }
 
-    saveData() {
+    saveToLocalStorage() {
         localStorage.setItem('bankme_cards', JSON.stringify(this.cards));
     }
 
@@ -291,6 +328,8 @@ class BankMeApp {
 
         if (type === 'success') {
             notification.style.background = '#28a745';
+        } else if (type === 'error') {
+            notification.style.background = '#dc3545';
         } else {
             notification.style.background = '#007bff';
         }
@@ -301,7 +340,9 @@ class BankMeApp {
         setTimeout(() => {
             notification.style.animation = 'slideOut 0.3s ease';
             setTimeout(() => {
-                document.body.removeChild(notification);
+                if (document.body.contains(notification)) {
+                    document.body.removeChild(notification);
+                }
             }, 300);
         }, 3000);
     }
