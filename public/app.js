@@ -202,7 +202,10 @@ class BankMeApp {
         const dueDate = new Date(card.due_date).toLocaleDateString();
         
         div.innerHTML = `
-            <h3>${card.card_name}</h3>
+            <div class="card-header">
+                <h3>${card.card_name}</h3>
+                <button class="delete-btn" onclick="app.deleteCard(${card.id})" title="Delete card">×</button>
+            </div>
             <div class="bank">${card.bank_name}</div>
             <div class="details">
                 <div class="detail">
@@ -225,6 +228,28 @@ class BankMeApp {
         `;
         
         return div;
+    }
+
+    async deleteCard(cardId) {
+        if (confirm('Are you sure you want to delete this credit card? This action cannot be undone.')) {
+            try {
+                const response = await fetch(`/api/cards/${cardId}`, {
+                    method: 'DELETE'
+                });
+
+                if (response.ok) {
+                    // Remove card from local array
+                    this.cards = this.cards.filter(card => card.id !== cardId);
+                    this.updateTabContent();
+                    this.showNotification('Credit card deleted successfully!', 'success');
+                } else {
+                    throw new Error('Failed to delete card');
+                }
+            } catch (error) {
+                console.error('Error deleting card:', error);
+                this.showNotification('Failed to delete card. Please try again.', 'error');
+            }
+        }
     }
 
     renderExpenses() {

@@ -107,6 +107,100 @@
         </main>
     </div>
 
+    <!-- Credit Card and Bank Suggestions -->
+    <datalist id="card-suggestions">
+        <!-- American Express -->
+        <option value="American Express Gold Card">
+        <option value="American Express Platinum Card">
+        <option value="American Express Green Card">
+        <option value="American Express Blue Cash Preferred">
+        <option value="American Express Blue Cash Everyday">
+        <option value="American Express Delta SkyMiles">
+        <option value="American Express Hilton Honors">
+        <option value="American Express Marriott Bonvoy">
+        
+        <!-- Chase -->
+        <option value="Chase Sapphire Preferred">
+        <option value="Chase Sapphire Reserve">
+        <option value="Chase Freedom Unlimited">
+        <option value="Chase Freedom Flex">
+        <option value="Chase Ink Business Preferred">
+        <option value="Chase Ink Business Unlimited">
+        <option value="Chase Southwest Rapid Rewards">
+        <option value="Chase United MileagePlus">
+        
+        <!-- Bank of America -->
+        <option value="Bank of America Travel Rewards">
+        <option value="Bank of America Cash Rewards">
+        <option value="Bank of America Premium Rewards">
+        <option value="Bank of America Customized Cash Rewards">
+        <option value="Bank of America Alaska Airlines">
+        
+        <!-- Capital One -->
+        <option value="Capital One Venture">
+        <option value="Capital One Venture X">
+        <option value="Capital One Savor">
+        <option value="Capital One SavorOne">
+        <option value="Capital One Quicksilver">
+        <option value="Capital One Spark Business">
+        
+        <!-- Citi -->
+        <option value="Citi Double Cash">
+        <option value="Citi Premier">
+        <option value="Citi Custom Cash">
+        <option value="Citi Rewards+">
+        <option value="Citi Costco Anywhere">
+        
+        <!-- Discover -->
+        <option value="Discover it Cash Back">
+        <option value="Discover it Miles">
+        <option value="Discover it Student Cash Back">
+        <option value="Discover it Business">
+        
+        <!-- Apple -->
+        <option value="Apple Card">
+        
+        <!-- Credit One -->
+        <option value="Credit One Bank Platinum">
+        <option value="Credit One Bank Cash Back">
+        <option value="Credit One Bank Wander">
+        
+        <!-- Wells Fargo -->
+        <option value="Wells Fargo Active Cash">
+        <option value="Wells Fargo Autograph">
+        <option value="Wells Fargo Reflect">
+        
+        <!-- Other Popular Cards -->
+        <option value="Target RedCard">
+        <option value="Amazon Prime Rewards">
+        <option value="Costco Anywhere Visa">
+        <option value="PayPal Cashback Mastercard">
+        <option value="Uber Visa">
+    </datalist>
+
+    <datalist id="bank-suggestions">
+        <option value="American Express">
+        <option value="Chase Bank">
+        <option value="Bank of America">
+        <option value="Capital One">
+        <option value="Citibank">
+        <option value="Discover Bank">
+        <option value="Wells Fargo">
+        <option value="US Bank">
+        <option value="PNC Bank">
+        <option value="TD Bank">
+        <option value="Credit One Bank">
+        <option value="Synchrony Bank">
+        <option value="Barclays">
+        <option value="Goldman Sachs">
+        <option value="Apple">
+        <option value="Target">
+        <option value="Amazon">
+        <option value="Costco">
+        <option value="PayPal">
+        <option value="Uber">
+    </datalist>
+
     <!-- Modals -->
     <div id="modal-overlay" class="modal-overlay hidden">
         <div class="modal">
@@ -118,19 +212,19 @@
                 <form id="card-form">
                     <div class="form-group">
                         <label for="card-name">Card Name</label>
-                        <input type="text" id="card-name" required>
+                        <input type="text" id="card-name" list="card-suggestions" placeholder="e.g., Chase Sapphire Preferred" required>
                     </div>
                     <div class="form-group">
                         <label for="bank-name">Bank Name</label>
-                        <input type="text" id="bank-name" required>
+                        <input type="text" id="bank-name" list="bank-suggestions" placeholder="e.g., Chase Bank" required>
                     </div>
                     <div class="form-group">
                         <label for="credit-limit">Credit Limit</label>
-                        <input type="number" id="credit-limit" step="0.01" required>
+                        <input type="number" id="credit-limit" step="0.01" placeholder="5000" required>
                     </div>
                     <div class="form-group">
                         <label for="current-balance">Current Balance</label>
-                        <input type="number" id="current-balance" step="0.01" required>
+                        <input type="number" id="current-balance" step="0.01" placeholder="1250.50" required>
                     </div>
                     <div class="form-group">
                         <label for="due-date">Due Date</label>
@@ -138,7 +232,7 @@
                     </div>
                     <div class="form-group">
                         <label for="interest-rate">Interest Rate (%)</label>
-                        <input type="number" id="interest-rate" step="0.01" required>
+                        <input type="number" id="interest-rate" step="0.01" placeholder="18.99" required>
                     </div>
                     <div class="form-actions">
                         <button type="button" class="btn btn-secondary" id="cancel-btn">Cancel</button>
