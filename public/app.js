@@ -189,6 +189,9 @@ class BankMeApp {
             return diffDays >= 0 && diffDays <= 7;
         }).length;
 
+        // Calculate total minimum due for all cards
+        const totalMinimumDue = this.cards.reduce((sum, card) => sum + this.getMinimumDue(card), 0);
+
         // Update bills summary
         const totalDue = this.bills.filter(bill => !bill.is_paid).reduce((sum, bill) => sum + parseFloat(bill.amount), 0);
         const upcomingBills = this.bills.filter(bill => {
@@ -211,6 +214,7 @@ class BankMeApp {
         document.getElementById('total-balance').textContent = `$${totalBalance.toLocaleString()}`;
         document.getElementById('utilization').textContent = `${utilization}%`;
         document.getElementById('upcoming-payments').textContent = upcomingPayments;
+        document.getElementById('total-min-due').textContent = `$${totalMinimumDue.toLocaleString()}`;
         document.getElementById('total-due').textContent = `$${totalDue.toLocaleString()}`;
         document.getElementById('upcoming-bills').textContent = upcomingBills;
         document.getElementById('overdue-bills').textContent = overdueBills;
@@ -468,6 +472,10 @@ class BankMeApp {
                     <div class="detail-label">Due Date</div>
                     <div class="detail-value ${this.getDueDateText(card.due_day).class}">${this.getDueDateText(card.due_day).text}</div>
                 </div>
+                <div class="detail">
+                    <div class="detail-label">Min Due</div>
+                    <div class="detail-value">$${this.getMinimumDue(card).toLocaleString()}</div>
+                </div>
             </div>
             <div class="card-actions">
                 <button class="btn btn-sm btn-secondary" onclick="app.showPaymentModal(${card.id})">Pay</button>
@@ -520,6 +528,17 @@ class BankMeApp {
         } else {
             return { text: `Due in ${diffDays} Day${diffDays === 1 ? '' : 's'}`, class: '' };
         }
+    }
+
+    getMinimumDue(card) {
+        // Use the stored minimum_due value, or calculate as fallback
+        if (card.minimum_due !== undefined && card.minimum_due !== null) {
+            return parseFloat(card.minimum_due);
+        }
+        // Fallback calculation as 1% of balance or $25, whichever is higher
+        const onePercent = parseFloat(card.current_balance) * 0.01;
+        const minimumDue = Math.max(onePercent, 25);
+        return Math.ceil(minimumDue); // Round up to nearest dollar
     }
 
     async deleteCard(cardId) {
@@ -723,7 +742,8 @@ class BankMeApp {
             credit_limit: parseFloat(document.getElementById('credit-limit').value),
             current_balance: parseFloat(document.getElementById('current-balance').value),
             due_day: parseInt(document.getElementById('due-day').value),
-            interest_rate: parseFloat(document.getElementById('interest-rate').value)
+            interest_rate: parseFloat(document.getElementById('interest-rate').value),
+            minimum_due: parseFloat(document.getElementById('minimum-due').value)
         };
 
         try {

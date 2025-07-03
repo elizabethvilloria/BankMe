@@ -37,6 +37,7 @@ function initDatabase() {
             current_balance REAL NOT NULL,
             due_day INTEGER NOT NULL,
             interest_rate REAL NOT NULL,
+            minimum_due REAL DEFAULT 25,
             position INTEGER DEFAULT 0,
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
             updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
@@ -279,15 +280,15 @@ app.get('/api/cards', (req, res) => {
 
 // Add new credit card
 app.post('/api/cards', (req, res) => {
-    const { card_name, bank_name, last4, credit_limit, current_balance, due_day, interest_rate } = req.body;
+    const { card_name, bank_name, last4, credit_limit, current_balance, due_day, interest_rate, minimum_due } = req.body;
     // Get max position
     db.get('SELECT MAX(position) as maxPos FROM credit_cards', [], (err, row) => {
         const nextPos = (row && row.maxPos !== null) ? row.maxPos + 1 : 0;
         const sql = `
-            INSERT INTO credit_cards (card_name, bank_name, last4, credit_limit, current_balance, due_day, interest_rate, position)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO credit_cards (card_name, bank_name, last4, credit_limit, current_balance, due_day, interest_rate, minimum_due, position)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
         `;
-        db.run(sql, [card_name, bank_name, last4, credit_limit, current_balance, due_day, interest_rate, nextPos], function(err) {
+        db.run(sql, [card_name, bank_name, last4, credit_limit, current_balance, due_day, interest_rate, minimum_due || 25, nextPos], function(err) {
             if (err) {
                 res.status(500).json({ error: err.message });
                 return;
@@ -305,17 +306,17 @@ app.post('/api/cards', (req, res) => {
 
 // Update credit card
 app.put('/api/cards/:id', (req, res) => {
-    const { card_name, bank_name, last4, credit_limit, current_balance, due_day, interest_rate } = req.body;
+    const { card_name, bank_name, last4, credit_limit, current_balance, due_day, interest_rate, minimum_due } = req.body;
     const { id } = req.params;
     
     const sql = `
         UPDATE credit_cards 
         SET card_name = ?, bank_name = ?, last4 = ?, credit_limit = ?, current_balance = ?, 
-            due_day = ?, interest_rate = ?, updated_at = CURRENT_TIMESTAMP
+            due_day = ?, interest_rate = ?, minimum_due = ?, updated_at = CURRENT_TIMESTAMP
         WHERE id = ?
     `;
     
-    db.run(sql, [card_name, bank_name, last4, credit_limit, current_balance, due_day, interest_rate, id], function(err) {
+    db.run(sql, [card_name, bank_name, last4, credit_limit, current_balance, due_day, interest_rate, minimum_due || 25, id], function(err) {
         if (err) {
             res.status(500).json({ error: err.message });
             return;
