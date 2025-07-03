@@ -4,6 +4,7 @@
 class BankMeApp {
     constructor() {
         this.cards = [];
+        this.bills = [];
         this.expenses = [];
         this.currentTab = 'dashboard';
         this.currentSort = 'custom';
@@ -111,6 +112,30 @@ class BankMeApp {
                 this.renderCards();
             });
         }
+
+        // Bill modal handling
+        document.getElementById('add-bill-btn').addEventListener('click', () => {
+            this.showBillModal();
+        });
+
+        document.getElementById('close-bill-modal').addEventListener('click', () => {
+            this.hideBillModal();
+        });
+
+        document.getElementById('cancel-bill-btn').addEventListener('click', () => {
+            this.hideBillModal();
+        });
+
+        document.getElementById('bill-modal-overlay').addEventListener('click', (e) => {
+            if (e.target.id === 'bill-modal-overlay') {
+                this.hideBillModal();
+            }
+        });
+
+        document.getElementById('bill-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            this.addBill();
+        });
     }
 
     switchTab(tabName) {
@@ -138,6 +163,9 @@ class BankMeApp {
             case 'cards':
                 this.renderCards();
                 break;
+            case 'bills':
+                this.renderBills();
+                break;
             case 'expenses':
                 this.renderExpenses();
                 break;
@@ -161,10 +189,31 @@ class BankMeApp {
             return diffDays >= 0 && diffDays <= 7;
         }).length;
 
+        // Update bills summary
+        const totalDue = this.bills.filter(bill => !bill.is_paid).reduce((sum, bill) => sum + parseFloat(bill.amount), 0);
+        const upcomingBills = this.bills.filter(bill => {
+            if (bill.is_paid) return false;
+            const dueDate = new Date(bill.due_date);
+            const today = new Date();
+            const diffTime = dueDate - today;
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            return diffDays >= 0 && diffDays <= 30;
+        }).length;
+        
+        const overdueBills = this.bills.filter(bill => {
+            if (bill.is_paid) return false;
+            const dueDate = new Date(bill.due_date);
+            const today = new Date();
+            return dueDate < today;
+        }).length;
+
         document.getElementById('total-limit').textContent = `$${totalLimit.toLocaleString()}`;
         document.getElementById('total-balance').textContent = `$${totalBalance.toLocaleString()}`;
         document.getElementById('utilization').textContent = `${utilization}%`;
         document.getElementById('upcoming-payments').textContent = upcomingPayments;
+        document.getElementById('total-due').textContent = `$${totalDue.toLocaleString()}`;
+        document.getElementById('upcoming-bills').textContent = upcomingBills;
+        document.getElementById('overdue-bills').textContent = overdueBills;
 
         // Add utilization status to dashboard
         const utilizationElement = document.getElementById('utilization');
@@ -659,12 +708,21 @@ class BankMeApp {
 
     async loadData() {
         try {
-            const response = await fetch('/api/cards');
-            if (response.ok) {
-                this.cards = await response.json();
+            // Load cards
+            const cardsResponse = await fetch('/api/cards');
+            if (cardsResponse.ok) {
+                this.cards = await cardsResponse.json();
             } else {
                 console.error('Failed to load cards from API, using localStorage as fallback');
                 this.loadFromLocalStorage();
+            }
+
+            // Load bills
+            const billsResponse = await fetch('/api/bills');
+            if (billsResponse.ok) {
+                this.bills = await billsResponse.json();
+            } else {
+                console.error('Failed to load bills from API');
             }
         } catch (error) {
             console.error('Error loading data from API:', error);
@@ -719,6 +777,156 @@ class BankMeApp {
                 }
             }, 300);
         }, 3000);
+    }
+
+    renderBills() {
+        const container = document.getElementById('bills-container');
+        container.innerHTML = '';
+
+        if (this.bills.length === 0) {
+            container.innerHTML = `
+                <div class="card" style="text-align: center; padding: 40px;">
+                    <h3>No Bills Added</h3>
+                    <p>Add your first bill to get started!</p>
+                    <button class="btn btn-primary" onclick="app.showBillModal()">Add Bill</button>
+                </div>
+            `;
+            return;
+        }
+
+        this.bills.forEach(bill => {
+            const billElement = this.createBillElement(bill);
+            container.appendChild(billElement);
+        });
+    }
+
+    createBillElement(bill) {
+        const div = document.createElement('div');
+        div.className = 'bill-item';
+        
+        const dueDate = new Date(bill.due_date);
+        const today = new Date();
+        const isOverdue = dueDate < today && !bill.is_paid;
+        const isPaid = bill.is_paid;
+        
+        if (isOverdue) div.classList.add('overdue');
+        if (isPaid) div.classList.add('paid');
+        
+        const statusClass = isPaid ? 'paid' : (isOverdue ? 'overdue' : 'unpaid');
+        const statusText = isPaid ? 'PAID' : (isOverdue ? 'OVERDUE' : 'UNPAID');
+        
+        div.innerHTML = `
+            <div class="bill-info">
+                <div class="bill-name">${bill.name}</div>
+                <div class="bill-details">
+                    <span>Due: ${dueDate.toLocaleDateString()}</span>
+                    <span class="bill-category">${bill.category}</span>
+                    ${bill.notes ? `<span>${bill.notes}</span>` : ''}
+                </div>
+            </div>
+            <div class="bill-amount">$${parseFloat(bill.amount).toLocaleString()}</div>
+            <div class="bill-actions">
+                <button class="bill-status ${statusClass}" onclick="app.toggleBillStatus(${bill.id})">
+                    ${statusText}
+                </button>
+                <button class="delete-bill-btn" onclick="app.deleteBill(${bill.id})" title="Delete bill">×</button>
+            </div>
+        `;
+        
+        return div;
+    }
+
+    showBillModal() {
+        const modal = document.getElementById('bill-modal-overlay');
+        document.getElementById('bill-modal-title').textContent = 'Add Bill';
+        document.getElementById('bill-form').reset();
+        
+        // Set default date to today
+        document.getElementById('bill-due-date').value = new Date().toISOString().split('T')[0];
+        
+        modal.classList.remove('hidden');
+    }
+
+    hideBillModal() {
+        document.getElementById('bill-modal-overlay').classList.add('hidden');
+        document.getElementById('bill-form').reset();
+    }
+
+    async addBill() {
+        const billData = {
+            name: document.getElementById('bill-name').value,
+            amount: parseFloat(document.getElementById('bill-amount').value),
+            due_date: document.getElementById('bill-due-date').value,
+            category: document.getElementById('bill-category').value,
+            notes: document.getElementById('bill-notes').value || null
+        };
+
+        try {
+            const response = await fetch('/api/bills', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(billData)
+            });
+
+            if (response.ok) {
+                const newBill = await response.json();
+                this.bills.push(newBill);
+                this.hideBillModal();
+                this.updateTabContent();
+                this.showNotification('Bill added successfully!', 'success');
+            } else {
+                throw new Error('Failed to add bill');
+            }
+        } catch (error) {
+            console.error('Error adding bill:', error);
+            this.showNotification('Failed to add bill. Please try again.', 'error');
+        }
+    }
+
+    async toggleBillStatus(billId) {
+        try {
+            const response = await fetch(`/api/bills/${billId}/toggle`, {
+                method: 'PATCH'
+            });
+
+            if (response.ok) {
+                const updatedBill = await response.json();
+                const billIndex = this.bills.findIndex(bill => bill.id === billId);
+                if (billIndex !== -1) {
+                    this.bills[billIndex] = updatedBill;
+                    this.updateTabContent();
+                    this.showNotification(`Bill marked as ${updatedBill.is_paid ? 'paid' : 'unpaid'}!`, 'success');
+                }
+            } else {
+                throw new Error('Failed to update bill status');
+            }
+        } catch (error) {
+            console.error('Error toggling bill status:', error);
+            this.showNotification('Failed to update bill status. Please try again.', 'error');
+        }
+    }
+
+    async deleteBill(billId) {
+        if (confirm('Are you sure you want to delete this bill? This action cannot be undone.')) {
+            try {
+                const response = await fetch(`/api/bills/${billId}`, {
+                    method: 'DELETE'
+                });
+
+                if (response.ok) {
+                    this.bills = this.bills.filter(bill => bill.id !== billId);
+                    this.updateTabContent();
+                    this.showNotification('Bill deleted successfully!', 'success');
+                } else {
+                    throw new Error('Failed to delete bill');
+                }
+            } catch (error) {
+                console.error('Error deleting bill:', error);
+                this.showNotification('Failed to delete bill. Please try again.', 'error');
+            }
+        }
     }
 }
 

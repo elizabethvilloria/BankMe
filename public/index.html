@@ -19,6 +19,7 @@
         <nav class="nav">
             <button class="nav-btn active" data-tab="dashboard">Dashboard</button>
             <button class="nav-btn" data-tab="cards">Credit Cards</button>
+            <button class="nav-btn" data-tab="bills">Bills</button>
             <button class="nav-btn" data-tab="expenses">Expenses</button>
             <button class="nav-btn" data-tab="budget">Budget</button>
         </nav>
@@ -119,6 +120,33 @@
                         <h3>Remaining</h3>
                         <p class="amount" id="budget-remaining">$0</p>
                     </div>
+                </div>
+            </div>
+
+            <!-- Bills Tab -->
+            <div id="bills" class="tab-content">
+                <div class="tab-header">
+                    <h2>Bills</h2>
+                    <button class="btn btn-primary" id="add-bill-btn">Add Bill</button>
+                </div>
+                
+                <div class="bills-overview">
+                    <div class="card">
+                        <h3>Total Due</h3>
+                        <p class="amount" id="total-due">$0</p>
+                    </div>
+                    <div class="card">
+                        <h3>Upcoming (30 days)</h3>
+                        <p class="amount" id="upcoming-bills">0</p>
+                    </div>
+                    <div class="card">
+                        <h3>Overdue</h3>
+                        <p class="amount" id="overdue-bills">0</p>
+                    </div>
+                </div>
+                
+                <div class="bills-list" id="bills-container">
+                    <!-- Bills will be added here dynamically -->
                 </div>
             </div>
         </main>
@@ -346,6 +374,55 @@
                     <div class="form-actions">
                         <button type="button" class="btn btn-secondary" id="cancel-charge-btn">Cancel</button>
                         <button type="submit" class="btn btn-primary">Add Charge</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bill Modal -->
+    <div id="bill-modal-overlay" class="modal-overlay hidden">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 id="bill-modal-title">Add Bill</h3>
+                <button class="close-btn" id="close-bill-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="bill-form">
+                    <div class="form-group">
+                        <label for="bill-name">Bill Name</label>
+                        <input type="text" id="bill-name" placeholder="e.g., Electric Bill" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="bill-amount">Amount</label>
+                        <input type="number" id="bill-amount" step="0.01" placeholder="85.50" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="bill-due-date">Due Date</label>
+                        <input type="date" id="bill-due-date" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="bill-category">Category</label>
+                        <select id="bill-category" required>
+                            <option value="">Select category...</option>
+                            <option value="Utilities">Utilities</option>
+                            <option value="Entertainment">Entertainment</option>
+                            <option value="Insurance">Insurance</option>
+                            <option value="Housing">Housing</option>
+                            <option value="Transportation">Transportation</option>
+                            <option value="Healthcare">Healthcare</option>
+                            <option value="Education">Education</option>
+                            <option value="Subscriptions">Subscriptions</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="bill-notes">Notes (Optional)</label>
+                        <input type="text" id="bill-notes" placeholder="e.g., Monthly electricity bill">
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-secondary" id="cancel-bill-btn">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Save Bill</button>
                     </div>
                 </form>
             </div>

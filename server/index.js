@@ -68,10 +68,25 @@ function initDatabase() {
         )
     `;
 
+    const createBillsTable = `
+        CREATE TABLE IF NOT EXISTS bills (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            amount REAL NOT NULL,
+            due_date TEXT NOT NULL,
+            category TEXT NOT NULL,
+            is_paid BOOLEAN DEFAULT 0,
+            notes TEXT,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        )
+    `;
+
     db.serialize(() => {
         db.run(createCardsTable);
         db.run(createTransactionsTable);
         db.run(createPaymentsTable);
+        db.run(createBillsTable);
         console.log('Database tables initialized');
         
         // Check if we need to add sample data
@@ -80,6 +95,15 @@ function initDatabase() {
                 console.error('Error checking credit_cards count:', err.message);
             } else if (row.count === 0) {
                 insertSampleData();
+            }
+        });
+
+        // Check if we need to add sample bills
+        db.get("SELECT COUNT(*) as count FROM bills", (err, row) => {
+            if (err) {
+                console.error('Error checking bills count:', err.message);
+            } else if (row.count === 0) {
+                insertSampleBills();
             }
         });
     });
@@ -150,6 +174,70 @@ function insertSampleData() {
             console.error('Error finalizing sample data insertion:', err.message);
         } else {
             console.log('Sample credit cards added to database');
+        }
+    });
+}
+
+function insertSampleBills() {
+    const sampleBills = [
+        {
+            name: 'Electric Bill',
+            amount: 85.50,
+            due_date: '2024-02-15',
+            category: 'Utilities',
+            is_paid: 0,
+            notes: 'Monthly electricity bill'
+        },
+        {
+            name: 'Netflix Subscription',
+            amount: 15.99,
+            due_date: '2024-02-20',
+            category: 'Entertainment',
+            is_paid: 0,
+            notes: 'Monthly streaming subscription'
+        },
+        {
+            name: 'Car Insurance',
+            amount: 120.00,
+            due_date: '2024-02-25',
+            category: 'Insurance',
+            is_paid: 0,
+            notes: 'Monthly car insurance premium'
+        },
+        {
+            name: 'Phone Bill',
+            amount: 65.00,
+            due_date: '2024-03-01',
+            category: 'Utilities',
+            is_paid: 0,
+            notes: 'Monthly phone service'
+        }
+    ];
+
+    const stmt = db.prepare(`INSERT INTO bills 
+        (name, amount, due_date, category, is_paid, notes) 
+        VALUES (?, ?, ?, ?, ?, ?)`);
+
+    sampleBills.forEach(bill => {
+        stmt.run([
+            bill.name,
+            bill.amount,
+            bill.due_date,
+            bill.category,
+            bill.is_paid,
+            bill.notes
+        ], (err) => {
+            if (err) {
+                console.error('Error inserting sample bill:', err.message);
+            }
+        });
+    });
+
+    stmt.finalize((err) => {
+        if (err) {
+            console.error('Error finalizing sample bills insertion:', err.message);
+        } else {
+            console.log('Sample bills added to database');
         }
     });
 }
@@ -301,6 +389,150 @@ app.put('/api/cards/order', (req, res) => {
         } else {
             res.json({ message: 'Order updated' });
         }
+    });
+});
+
+// Bills API Routes
+
+// Get all bills
+app.get('/api/bills', (req, res) => {
+    const sql = 'SELECT * FROM bills ORDER BY due_date ASC';
+    db.all(sql, [], (err, rows) => {
+        if (err) {
+            res.status(500).json({ error: err.message });
+            return;
+        }
+        res.json(rows);
+    });
+});
+
+// Add new bill
+app.post('/api/bills', (req, res) => {
+    const { name, amount, due_date, category, notes } = req.body;
+    
+    const sql = `
+        INSERT INTO bills (name, amount, due_date, category, notes)
+        VALUES (?, ?, ?, ?, ?)
+    `;
+    
+    db.run(sql, [name, amount, due_date, category, notes], function(err) {
+        if (err) {
+            res.status(500).json({ error: err.message });
+            return;
+        }
+        
+        // Get the newly created bill
+        db.get('SELECT * FROM bills WHERE id = ?', [this.lastID], (err, row) => {
+            if (err) {
+                res.status(500).json({ error: err.message });
+                return;
+            }
+            res.status(201).json(row);
+        });
+    });
+});
+
+// Update bill
+app.put('/api/bills/:id', (req, res) => {
+    const { name, amount, due_date, category, is_paid, notes } = req.body;
+    const { id } = req.params;
+    
+    const sql = `
+        UPDATE bills 
+        SET name = ?, amount = ?, due_date = ?, category = ?, is_paid = ?, notes = ?, updated_at = CURRENT_TIMESTAMP
+        WHERE id = ?
+    `;
+    
+    db.run(sql, [name, amount, due_date, category, is_paid, notes, id], function(err) {
+        if (err) {
+            res.status(500).json({ error: err.message });
+            return;
+        }
+        
+        if (this.changes === 0) {
+            res.status(404).json({ error: 'Bill not found' });
+            return;
+        }
+        
+        // Get the updated bill
+        db.get('SELECT * FROM bills WHERE id = ?', [id], (err, row) => {
+            if (err) {
+                res.status(500).json({ error: err.message });
+                return;
+            }
+            res.json(row);
+        });
+    });
+});
+
+// Delete bill
+app.delete('/api/bills/:id', (req, res) => {
+    const { id } = req.params;
+    
+    db.run('DELETE FROM bills WHERE id = ?', [id], function(err) {
+        if (err) {
+            res.status(500).json({ error: err.message });
+            return;
+        }
+        
+        if (this.changes === 0) {
+            res.status(404).json({ error: 'Bill not found' });
+            return;
+        }
+        
+        res.json({ message: 'Bill deleted successfully' });
+    });
+});
+
+// Toggle bill paid status
+app.patch('/api/bills/:id/toggle', (req, res) => {
+    const { id } = req.params;
+    
+    db.get('SELECT is_paid FROM bills WHERE id = ?', [id], (err, row) => {
+        if (err) {
+            res.status(500).json({ error: err.message });
+            return;
+        }
+        
+        if (!row) {
+            res.status(404).json({ error: 'Bill not found' });
+            return;
+        }
+        
+        const newStatus = row.is_paid ? 0 : 1;
+        
+        db.run('UPDATE bills SET is_paid = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?', [newStatus, id], function(err) {
+            if (err) {
+                res.status(500).json({ error: err.message });
+                return;
+            }
+            
+            db.get('SELECT * FROM bills WHERE id = ?', [id], (err, updatedRow) => {
+                if (err) {
+                    res.status(500).json({ error: err.message });
+                    return;
+                }
+                res.json(updatedRow);
+            });
+        });
+    });
+});
+
+// Get upcoming bills (due within 30 days)
+app.get('/api/bills/upcoming', (req, res) => {
+    const sql = `
+        SELECT * FROM bills 
+        WHERE date(due_date) BETWEEN date('now') AND date('now', '+30 days')
+        AND is_paid = 0
+        ORDER BY due_date ASC
+    `;
+    
+    db.all(sql, [], (err, rows) => {
+        if (err) {
+            res.status(500).json({ error: err.message });
+            return;
+        }
+        res.json(rows);
     });
 });
 
