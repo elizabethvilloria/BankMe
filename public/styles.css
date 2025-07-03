@@ -1282,4 +1282,10 @@ body {
 .delete-bill-btn:hover {
     background: #ff3742;
     transform: scale(1.1);
+}
+
+/* Ensure card action button text is visible */
+.card-actions .btn {
+  color: #333 !important;
+  font-weight: 600;
 } 
