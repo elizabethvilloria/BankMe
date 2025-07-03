@@ -35,7 +35,7 @@ function initDatabase() {
             last4 TEXT,
             credit_limit REAL NOT NULL,
             current_balance REAL NOT NULL,
-            due_date TEXT NOT NULL,
+            due_day INTEGER NOT NULL,
             interest_rate REAL NOT NULL,
             position INTEGER DEFAULT 0,
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
@@ -83,6 +83,27 @@ function initDatabase() {
     `;
 
     db.serialize(() => {
+        // Migration: if due_date exists, extract day and add due_day
+        db.get("PRAGMA table_info(credit_cards)", (err, info) => {
+            db.all("PRAGMA table_info(credit_cards)", (err, columns) => {
+                const hasDueDate = columns.some(col => col.name === 'due_date');
+                const hasDueDay = columns.some(col => col.name === 'due_day');
+                if (hasDueDate && !hasDueDay) {
+                    db.run('ALTER TABLE credit_cards ADD COLUMN due_day INTEGER', () => {
+                        db.all('SELECT id, due_date FROM credit_cards', (err, rows) => {
+                            if (rows) {
+                                rows.forEach(row => {
+                                    if (row.due_date) {
+                                        const day = parseInt(row.due_date.split('-')[2]);
+                                        db.run('UPDATE credit_cards SET due_day = ? WHERE id = ?', [day, row.id]);
+                                    }
+                                });
+                            }
+                        });
+                    });
+                }
+            });
+        });
         db.run(createCardsTable);
         db.run(createTransactionsTable);
         db.run(createPaymentsTable);
@@ -117,7 +138,7 @@ function insertSampleData() {
             last4: '1234',
             credit_limit: 10000,
             current_balance: 2500,
-            due_date: '2024-02-15',
+            due_day: 15,
             interest_rate: 18.99
         },
         {
@@ -126,7 +147,7 @@ function insertSampleData() {
             last4: '5678',
             credit_limit: 8000,
             current_balance: 1200,
-            due_date: '2024-02-20',
+            due_day: 20,
             interest_rate: 16.99
         },
         {
@@ -135,7 +156,7 @@ function insertSampleData() {
             last4: '9012',
             credit_limit: 6000,
             current_balance: 800,
-            due_date: '2024-02-25',
+            due_day: 25,
             interest_rate: 15.99
         },
         {
@@ -144,13 +165,13 @@ function insertSampleData() {
             last4: '3456',
             credit_limit: 15000,
             current_balance: 4500,
-            due_date: '2024-02-10',
+            due_day: 10,
             interest_rate: 19.99
         }
     ];
 
     const stmt = db.prepare(`INSERT INTO credit_cards 
-        (card_name, bank_name, last4, credit_limit, current_balance, due_date, interest_rate) 
+        (card_name, bank_name, last4, credit_limit, current_balance, due_day, interest_rate) 
         VALUES (?, ?, ?, ?, ?, ?, ?)`);
 
     sampleCards.forEach(card => {
@@ -160,7 +181,7 @@ function insertSampleData() {
             card.last4,
             card.credit_limit,
             card.current_balance,
-            card.due_date,
+            card.due_day,
             card.interest_rate
         ], (err) => {
             if (err) {
@@ -258,15 +279,15 @@ app.get('/api/cards', (req, res) => {
 
 // Add new credit card
 app.post('/api/cards', (req, res) => {
-    const { card_name, bank_name, last4, credit_limit, current_balance, due_date, interest_rate } = req.body;
+    const { card_name, bank_name, last4, credit_limit, current_balance, due_day, interest_rate } = req.body;
     // Get max position
     db.get('SELECT MAX(position) as maxPos FROM credit_cards', [], (err, row) => {
         const nextPos = (row && row.maxPos !== null) ? row.maxPos + 1 : 0;
         const sql = `
-            INSERT INTO credit_cards (card_name, bank_name, last4, credit_limit, current_balance, due_date, interest_rate, position)
+            INSERT INTO credit_cards (card_name, bank_name, last4, credit_limit, current_balance, due_day, interest_rate, position)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?)
         `;
-        db.run(sql, [card_name, bank_name, last4, credit_limit, current_balance, due_date, interest_rate, nextPos], function(err) {
+        db.run(sql, [card_name, bank_name, last4, credit_limit, current_balance, due_day, interest_rate, nextPos], function(err) {
             if (err) {
                 res.status(500).json({ error: err.message });
                 return;
@@ -284,17 +305,17 @@ app.post('/api/cards', (req, res) => {
 
 // Update credit card
 app.put('/api/cards/:id', (req, res) => {
-    const { card_name, bank_name, last4, credit_limit, current_balance, due_date, interest_rate } = req.body;
+    const { card_name, bank_name, last4, credit_limit, current_balance, due_day, interest_rate } = req.body;
     const { id } = req.params;
     
     const sql = `
         UPDATE credit_cards 
         SET card_name = ?, bank_name = ?, last4 = ?, credit_limit = ?, current_balance = ?, 
-            due_date = ?, interest_rate = ?, updated_at = CURRENT_TIMESTAMP
+            due_day = ?, interest_rate = ?, updated_at = CURRENT_TIMESTAMP
         WHERE id = ?
     `;
     
-    db.run(sql, [card_name, bank_name, last4, credit_limit, current_balance, due_date, interest_rate, id], function(err) {
+    db.run(sql, [card_name, bank_name, last4, credit_limit, current_balance, due_day, interest_rate, id], function(err) {
         if (err) {
             res.status(500).json({ error: err.message });
             return;

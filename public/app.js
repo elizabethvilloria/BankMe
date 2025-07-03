@@ -429,7 +429,7 @@ class BankMeApp {
         div.className = 'credit-card';
         
         const utilization = ((parseFloat(card.current_balance) / parseFloat(card.credit_limit)) * 100).toFixed(1);
-        const dueDate = new Date(card.due_date).toLocaleDateString();
+        const dueDate = this.getNextDueDate(card.due_day);
         const isOverLimit = parseFloat(card.current_balance) > parseFloat(card.credit_limit);
         const utilizationClass = this.getUtilizationClass(utilization);
         const cardDisplayName = this.getCardDisplayName(card);
@@ -458,7 +458,7 @@ class BankMeApp {
                 </div>
                 <div class="detail">
                     <div class="detail-label">Due Date</div>
-                    <div class="detail-value">${dueDate}</div>
+                    <div class="detail-value">${dueDate.toLocaleDateString()}</div>
                 </div>
             </div>
             <div class="card-actions">
@@ -476,6 +476,23 @@ class BankMeApp {
         if (util > 70) return 'high';
         if (util > 30) return 'medium';
         return 'low';
+    }
+
+    getNextDueDate(dueDay) {
+        const today = new Date();
+        let year = today.getFullYear();
+        let month = today.getMonth();
+        let nextDue = new Date(year, month, dueDay);
+        if (nextDue < today) {
+            // If this month's due date has passed, go to next month
+            month += 1;
+            if (month > 11) {
+                month = 0;
+                year += 1;
+            }
+            nextDue = new Date(year, month, dueDay);
+        }
+        return nextDue;
     }
 
     async deleteCard(cardId) {
@@ -678,7 +695,7 @@ class BankMeApp {
             last4: document.getElementById('card-last4').value || null,
             credit_limit: parseFloat(document.getElementById('credit-limit').value),
             current_balance: parseFloat(document.getElementById('current-balance').value),
-            due_date: document.getElementById('due-date').value,
+            due_day: parseInt(document.getElementById('due-day').value),
             interest_rate: parseFloat(document.getElementById('interest-rate').value)
         };
 
