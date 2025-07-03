@@ -62,9 +62,26 @@
             <div id="cards" class="tab-content">
                 <div class="tab-header">
                     <h2>Credit Cards</h2>
-                    <button class="btn btn-primary" id="add-card-btn">Add New Card</button>
+                    <div class="card-actions">
+                        <button class="btn btn-secondary" id="add-payment-btn">Add Payment</button>
+                        <button class="btn btn-secondary" id="add-charge-btn">Add Charge</button>
+                        <button class="btn btn-primary" id="add-card-btn">Add New Card</button>
+                    </div>
                 </div>
-                
+                <div class="sort-bar">
+                    <label for="card-sort">Sort by:</label>
+                    <select id="card-sort">
+                        <option value="custom">Custom (Drag & Drop)</option>
+                        <option value="az">Alphabetical (A-Z)</option>
+                        <option value="za">Alphabetical (Z-A)</option>
+                        <option value="debt-desc">Most Debt</option>
+                        <option value="debt-asc">Least Debt</option>
+                        <option value="limit-desc">Highest Limit</option>
+                        <option value="limit-asc">Lowest Limit</option>
+                        <option value="due-soon">Due Date (Soonest First)</option>
+                        <option value="due-late">Due Date (Latest First)</option>
+                    </select>
+                </div>
                 <div class="cards-grid" id="cards-container">
                     <!-- Cards will be added here dynamically -->
                 </div>
@@ -219,6 +236,11 @@
                         <input type="text" id="bank-name" list="bank-suggestions" placeholder="e.g., Chase Bank" required>
                     </div>
                     <div class="form-group">
+                        <label for="card-last4">Last 4 Digits (Optional)</label>
+                        <input type="text" id="card-last4" maxlength="4" pattern="[0-9]{4}" placeholder="1234" title="Enter the last 4 digits of your card">
+                        <small class="form-help">This helps distinguish between multiple cards from the same bank</small>
+                    </div>
+                    <div class="form-group">
                         <label for="credit-limit">Credit Limit</label>
                         <input type="number" id="credit-limit" step="0.01" placeholder="5000" required>
                     </div>
@@ -237,6 +259,93 @@
                     <div class="form-actions">
                         <button type="button" class="btn btn-secondary" id="cancel-btn">Cancel</button>
                         <button type="submit" class="btn btn-primary">Save Card</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Payment Modal -->
+    <div id="payment-modal-overlay" class="modal-overlay hidden">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>Add Payment</h3>
+                <button class="close-btn" id="close-payment-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="payment-form">
+                    <div class="form-group">
+                        <label for="payment-card-select">Select Card</label>
+                        <select id="payment-card-select" required>
+                            <option value="">Choose a credit card...</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="payment-amount">Payment Amount</label>
+                        <input type="number" id="payment-amount" step="0.01" placeholder="500.00" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="payment-date">Payment Date</label>
+                        <input type="date" id="payment-date" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="payment-notes">Notes (Optional)</label>
+                        <input type="text" id="payment-notes" placeholder="e.g., Monthly payment">
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-secondary" id="cancel-payment-btn">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Add Payment</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charge Modal -->
+    <div id="charge-modal-overlay" class="modal-overlay hidden">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>Add Charge</h3>
+                <button class="close-btn" id="close-charge-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="charge-form">
+                    <div class="form-group">
+                        <label for="charge-card-select">Select Card</label>
+                        <select id="charge-card-select" required>
+                            <option value="">Choose a credit card...</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="charge-amount">Charge Amount</label>
+                        <input type="number" id="charge-amount" step="0.01" placeholder="75.50" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="charge-description">Description</label>
+                        <input type="text" id="charge-description" placeholder="e.g., Groceries at Walmart" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="charge-category">Category</label>
+                        <select id="charge-category" required>
+                            <option value="">Select category...</option>
+                            <option value="Food & Dining">Food & Dining</option>
+                            <option value="Shopping">Shopping</option>
+                            <option value="Transportation">Transportation</option>
+                            <option value="Entertainment">Entertainment</option>
+                            <option value="Travel">Travel</option>
+                            <option value="Utilities">Utilities</option>
+                            <option value="Healthcare">Healthcare</option>
+                            <option value="Education">Education</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="charge-date">Charge Date</label>
+                        <input type="date" id="charge-date" required>
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-secondary" id="cancel-charge-btn">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Add Charge</button>
                     </div>
                 </form>
             </div>

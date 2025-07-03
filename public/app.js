@@ -6,6 +6,7 @@ class BankMeApp {
         this.cards = [];
         this.expenses = [];
         this.currentTab = 'dashboard';
+        this.currentSort = 'custom';
         this.init();
     }
 
@@ -28,26 +29,88 @@ class BankMeApp {
             this.showModal('Add New Card');
         });
 
+        document.getElementById('add-payment-btn').addEventListener('click', () => {
+            this.showPaymentModal();
+        });
+
+        document.getElementById('add-charge-btn').addEventListener('click', () => {
+            this.showChargeModal();
+        });
+
+        // Close modals
         document.getElementById('close-modal').addEventListener('click', () => {
             this.hideModal();
         });
 
+        document.getElementById('close-payment-modal').addEventListener('click', () => {
+            this.hidePaymentModal();
+        });
+
+        document.getElementById('close-charge-modal').addEventListener('click', () => {
+            this.hideChargeModal();
+        });
+
+        // Cancel buttons
         document.getElementById('cancel-btn').addEventListener('click', () => {
             this.hideModal();
         });
 
-        // Form submission
+        document.getElementById('cancel-payment-btn').addEventListener('click', () => {
+            this.hidePaymentModal();
+        });
+
+        document.getElementById('cancel-charge-btn').addEventListener('click', () => {
+            this.hideChargeModal();
+        });
+
+        // Form submissions
         document.getElementById('card-form').addEventListener('submit', (e) => {
             e.preventDefault();
             this.addCard();
         });
 
-        // Close modal when clicking overlay
+        document.getElementById('payment-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            this.addPayment();
+        });
+
+        document.getElementById('charge-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            this.addCharge();
+        });
+
+        // Close modals when clicking overlay
         document.getElementById('modal-overlay').addEventListener('click', (e) => {
             if (e.target.id === 'modal-overlay') {
                 this.hideModal();
             }
         });
+
+        document.getElementById('payment-modal-overlay').addEventListener('click', (e) => {
+            if (e.target.id === 'payment-modal-overlay') {
+                this.hidePaymentModal();
+            }
+        });
+
+        document.getElementById('charge-modal-overlay').addEventListener('click', (e) => {
+            if (e.target.id === 'charge-modal-overlay') {
+                this.hideChargeModal();
+            }
+        });
+
+        // Last 4 digits input validation
+        document.getElementById('card-last4').addEventListener('input', (e) => {
+            e.target.value = e.target.value.replace(/[^0-9]/g, '').slice(0, 4);
+        });
+
+        // Sort dropdown
+        const sortSelect = document.getElementById('card-sort');
+        if (sortSelect) {
+            sortSelect.addEventListener('change', (e) => {
+                this.currentSort = e.target.value;
+                this.renderCards();
+            });
+        }
     }
 
     switchTab(tabName) {
@@ -129,7 +192,7 @@ class BankMeApp {
             window.balanceChart = new Chart(balanceCtx, {
                 type: 'doughnut',
                 data: {
-                    labels: this.cards.map(card => card.card_name),
+                    labels: this.cards.map(card => this.getCardDisplayName(card)),
                     datasets: [{
                         data: this.cards.map(card => parseFloat(card.current_balance)),
                         backgroundColor: [
@@ -184,6 +247,13 @@ class BankMeApp {
         }
     }
 
+    getCardDisplayName(card) {
+        if (card.last4) {
+            return `${card.card_name} (****${card.last4})`;
+        }
+        return card.card_name;
+    }
+
     renderCards() {
         const container = document.getElementById('cards-container');
         container.innerHTML = '';
@@ -199,10 +269,110 @@ class BankMeApp {
             return;
         }
 
-        this.cards.forEach(card => {
+        // Sort cards based on currentSort
+        let sortedCards = [...this.cards];
+        switch (this.currentSort) {
+            case 'az':
+                sortedCards.sort((a, b) => a.card_name.localeCompare(b.card_name));
+                break;
+            case 'za':
+                sortedCards.sort((a, b) => b.card_name.localeCompare(a.card_name));
+                break;
+            case 'debt-desc':
+                sortedCards.sort((a, b) => parseFloat(b.current_balance) - parseFloat(a.current_balance));
+                break;
+            case 'debt-asc':
+                sortedCards.sort((a, b) => parseFloat(a.current_balance) - parseFloat(b.current_balance));
+                break;
+            case 'limit-desc':
+                sortedCards.sort((a, b) => parseFloat(b.credit_limit) - parseFloat(a.credit_limit));
+                break;
+            case 'limit-asc':
+                sortedCards.sort((a, b) => parseFloat(a.credit_limit) - parseFloat(b.credit_limit));
+                break;
+            case 'due-soon':
+                sortedCards.sort((a, b) => new Date(a.due_date) - new Date(b.due_date));
+                break;
+            case 'due-late':
+                sortedCards.sort((a, b) => new Date(b.due_date) - new Date(a.due_date));
+                break;
+            case 'custom':
+            default:
+                sortedCards.sort((a, b) => (a.position ?? 0) - (b.position ?? 0));
+                break;
+        }
+
+        // Drag-and-drop support only for custom sort
+        if (this.currentSort === 'custom') {
+            container.ondragover = (e) => { e.preventDefault(); };
+            container.ondrop = (e) => { e.preventDefault(); };
+        } else {
+            container.ondragover = null;
+            container.ondrop = null;
+        }
+
+        sortedCards.forEach((card, idx) => {
             const cardElement = this.createCardElement(card);
+            if (this.currentSort === 'custom') {
+                cardElement.setAttribute('draggable', 'true');
+                cardElement.dataset.cardId = card.id;
+                cardElement.dataset.index = idx;
+
+                cardElement.ondragstart = (e) => {
+                    e.dataTransfer.effectAllowed = 'move';
+                    e.dataTransfer.setData('text/plain', idx);
+                    cardElement.classList.add('dragging');
+                };
+                cardElement.ondragend = (e) => {
+                    cardElement.classList.remove('dragging');
+                };
+                cardElement.ondragover = (e) => {
+                    e.preventDefault();
+                    cardElement.classList.add('drag-over');
+                };
+                cardElement.ondragleave = (e) => {
+                    cardElement.classList.remove('drag-over');
+                };
+                cardElement.ondrop = (e) => {
+                    e.preventDefault();
+                    cardElement.classList.remove('drag-over');
+                    const fromIdx = parseInt(e.dataTransfer.getData('text/plain'));
+                    const toIdx = idx;
+                    if (fromIdx !== toIdx) {
+                        this.moveCard(fromIdx, toIdx);
+                    }
+                };
+            } else {
+                cardElement.removeAttribute('draggable');
+                cardElement.ondragstart = null;
+                cardElement.ondragend = null;
+                cardElement.ondragover = null;
+                cardElement.ondragleave = null;
+                cardElement.ondrop = null;
+            }
             container.appendChild(cardElement);
         });
+    }
+
+    moveCard(fromIdx, toIdx) {
+        const moved = this.cards.splice(fromIdx, 1)[0];
+        this.cards.splice(toIdx, 0, moved);
+        this.renderCards();
+        this.saveCardOrder();
+    }
+
+    async saveCardOrder() {
+        // Save the new order to the backend
+        const order = this.cards.map((card, idx) => ({ id: card.id, position: idx }));
+        try {
+            await fetch('/api/cards/order', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ order })
+            });
+        } catch (err) {
+            this.showNotification('Failed to save card order', 'error');
+        }
     }
 
     createCardElement(card) {
@@ -213,10 +383,11 @@ class BankMeApp {
         const dueDate = new Date(card.due_date).toLocaleDateString();
         const isOverLimit = parseFloat(card.current_balance) > parseFloat(card.credit_limit);
         const utilizationClass = this.getUtilizationClass(utilization);
+        const cardDisplayName = this.getCardDisplayName(card);
         
         div.innerHTML = `
             <div class="card-header">
-                <h3>${card.card_name}</h3>
+                <h3>${cardDisplayName}</h3>
                 <button class="delete-btn" onclick="app.deleteCard(${card.id})" title="Delete card">×</button>
             </div>
             <div class="bank">${card.bank_name}</div>
@@ -240,6 +411,10 @@ class BankMeApp {
                     <div class="detail-label">Due Date</div>
                     <div class="detail-value">${dueDate}</div>
                 </div>
+            </div>
+            <div class="card-actions">
+                <button class="btn btn-sm btn-secondary" onclick="app.showPaymentModal(${card.id})">Pay</button>
+                <button class="btn btn-sm btn-secondary" onclick="app.showChargeModal(${card.id})">Charge</button>
             </div>
         `;
         
@@ -276,6 +451,155 @@ class BankMeApp {
         }
     }
 
+    showPaymentModal(cardId = null) {
+        const modal = document.getElementById('payment-modal-overlay');
+        const select = document.getElementById('payment-card-select');
+        
+        // Populate card select
+        select.innerHTML = '<option value="">Choose a credit card...</option>';
+        this.cards.forEach(card => {
+            const option = document.createElement('option');
+            option.value = card.id;
+            option.textContent = `${this.getCardDisplayName(card)} ($${parseFloat(card.current_balance).toLocaleString()})`;
+            if (cardId && card.id === cardId) {
+                option.selected = true;
+            }
+            select.appendChild(option);
+        });
+
+        // Set default date to today
+        document.getElementById('payment-date').value = new Date().toISOString().split('T')[0];
+        
+        modal.classList.remove('hidden');
+    }
+
+    hidePaymentModal() {
+        document.getElementById('payment-modal-overlay').classList.add('hidden');
+        document.getElementById('payment-form').reset();
+    }
+
+    showChargeModal(cardId = null) {
+        const modal = document.getElementById('charge-modal-overlay');
+        const select = document.getElementById('charge-card-select');
+        
+        // Populate card select
+        select.innerHTML = '<option value="">Choose a credit card...</option>';
+        this.cards.forEach(card => {
+            const option = document.createElement('option');
+            option.value = card.id;
+            option.textContent = `${this.getCardDisplayName(card)} ($${parseFloat(card.current_balance).toLocaleString()})`;
+            if (cardId && card.id === cardId) {
+                option.selected = true;
+            }
+            select.appendChild(option);
+        });
+
+        // Set default date to today
+        document.getElementById('charge-date').value = new Date().toISOString().split('T')[0];
+        
+        modal.classList.remove('hidden');
+    }
+
+    hideChargeModal() {
+        document.getElementById('charge-modal-overlay').classList.add('hidden');
+        document.getElementById('charge-form').reset();
+    }
+
+    async addPayment() {
+        const cardId = parseInt(document.getElementById('payment-card-select').value);
+        const amount = parseFloat(document.getElementById('payment-amount').value);
+        const date = document.getElementById('payment-date').value;
+        const notes = document.getElementById('payment-notes').value;
+
+        if (!cardId) {
+            this.showNotification('Please select a credit card', 'error');
+            return;
+        }
+
+        try {
+            // Find the card and update its balance
+            const cardIndex = this.cards.findIndex(card => card.id === cardId);
+            if (cardIndex === -1) {
+                throw new Error('Card not found');
+            }
+
+            const card = this.cards[cardIndex];
+            const newBalance = Math.max(0, parseFloat(card.current_balance) - amount);
+            
+            // Update the card balance
+            const updatedCard = { ...card, current_balance: newBalance };
+            
+            const response = await fetch(`/api/cards/${cardId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(updatedCard)
+            });
+
+            if (response.ok) {
+                // Update local card data
+                this.cards[cardIndex] = updatedCard;
+                this.hidePaymentModal();
+                this.updateTabContent();
+                this.showNotification(`Payment of $${amount.toLocaleString()} applied successfully!`, 'success');
+            } else {
+                throw new Error('Failed to update card');
+            }
+        } catch (error) {
+            console.error('Error adding payment:', error);
+            this.showNotification('Failed to add payment. Please try again.', 'error');
+        }
+    }
+
+    async addCharge() {
+        const cardId = parseInt(document.getElementById('charge-card-select').value);
+        const amount = parseFloat(document.getElementById('charge-amount').value);
+        const description = document.getElementById('charge-description').value;
+        const category = document.getElementById('charge-category').value;
+        const date = document.getElementById('charge-date').value;
+
+        if (!cardId) {
+            this.showNotification('Please select a credit card', 'error');
+            return;
+        }
+
+        try {
+            // Find the card and update its balance
+            const cardIndex = this.cards.findIndex(card => card.id === cardId);
+            if (cardIndex === -1) {
+                throw new Error('Card not found');
+            }
+
+            const card = this.cards[cardIndex];
+            const newBalance = parseFloat(card.current_balance) + amount;
+            
+            // Update the card balance
+            const updatedCard = { ...card, current_balance: newBalance };
+            
+            const response = await fetch(`/api/cards/${cardId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(updatedCard)
+            });
+
+            if (response.ok) {
+                // Update local card data
+                this.cards[cardIndex] = updatedCard;
+                this.hideChargeModal();
+                this.updateTabContent();
+                this.showNotification(`Charge of $${amount.toLocaleString()} added successfully!`, 'success');
+            } else {
+                throw new Error('Failed to update card');
+            }
+        } catch (error) {
+            console.error('Error adding charge:', error);
+            this.showNotification('Failed to add charge. Please try again.', 'error');
+        }
+    }
+
     renderExpenses() {
         const container = document.getElementById('expenses-container');
         container.innerHTML = '<p>Expense tracking coming soon!</p>';
@@ -302,6 +626,7 @@ class BankMeApp {
         const cardData = {
             card_name: document.getElementById('card-name').value,
             bank_name: document.getElementById('bank-name').value,
+            last4: document.getElementById('card-last4').value || null,
             credit_limit: parseFloat(document.getElementById('credit-limit').value),
             current_balance: parseFloat(document.getElementById('current-balance').value),
             due_date: document.getElementById('due-date').value,
@@ -414,4 +739,4 @@ document.head.appendChild(style);
 // Initialize the app when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
     window.app = new BankMeApp();
-}); 
+});
