@@ -828,6 +828,29 @@ body {
     font-weight: bold;
 }
 
+/* Due date text styling */
+.detail-value.due-today {
+    color: #dc3545;
+    font-weight: 600;
+    animation: pulse 2s infinite;
+}
+
+.detail-value.due-tomorrow {
+    color: #fd7e14;
+    font-weight: 600;
+}
+
+.detail-value.due-soon {
+    color: #ffc107;
+    font-weight: 600;
+}
+
+.detail-value.overdue {
+    color: #dc3545;
+    font-weight: 700;
+    text-decoration: underline;
+}
+
 .card-actions {
     display: flex;
     gap: 10px;

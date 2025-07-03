@@ -466,7 +466,7 @@ class BankMeApp {
                 </div>
                 <div class="detail">
                     <div class="detail-label">Due Date</div>
-                    <div class="detail-value">${dueDate.toLocaleDateString()}</div>
+                    <div class="detail-value ${this.getDueDateText(card.due_day).class}">${this.getDueDateText(card.due_day).text}</div>
                 </div>
             </div>
             <div class="card-actions">
@@ -501,6 +501,25 @@ class BankMeApp {
             nextDue = new Date(year, month, dueDay);
         }
         return nextDue;
+    }
+
+    getDueDateText(dueDay) {
+        const nextDue = this.getNextDueDate(dueDay);
+        const today = new Date();
+        const diffTime = nextDue - today;
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        
+        if (diffDays === 0) {
+            return { text: 'Due Today', class: 'due-today' };
+        } else if (diffDays === 1) {
+            return { text: 'Due Tomorrow', class: 'due-tomorrow' };
+        } else if (diffDays < 0) {
+            return { text: `${Math.abs(diffDays)} Day${Math.abs(diffDays) === 1 ? '' : 's'} Overdue`, class: 'overdue' };
+        } else if (diffDays <= 3) {
+            return { text: `Due in ${diffDays} Day${diffDays === 1 ? '' : 's'}`, class: 'due-soon' };
+        } else {
+            return { text: `Due in ${diffDays} Day${diffDays === 1 ? '' : 's'}`, class: '' };
+        }
     }
 
     async deleteCard(cardId) {
