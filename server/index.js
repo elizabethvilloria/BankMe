@@ -379,20 +379,45 @@ app.get('/api/dashboard', (req, res) => {
 
 // Get upcoming payments (due within 7 days)
 app.get('/api/upcoming-payments', (req, res) => {
-    const sql = `
-        SELECT * FROM credit_cards 
-        WHERE date(due_date) BETWEEN date('now') AND date('now', '+7 days')
-        ORDER BY due_date ASC
-    `;
+    // Get all cards and filter by upcoming due dates on the server side
+    const sql = `SELECT * FROM credit_cards ORDER BY due_day ASC`;
     
     db.all(sql, [], (err, rows) => {
         if (err) {
             res.status(500).json({ error: err.message });
             return;
         }
-        res.json(rows);
+        
+        // Filter cards that are due within 7 days
+        const today = new Date();
+        const upcomingCards = rows.filter(card => {
+            const nextDueDate = getNextDueDate(card.due_day);
+            const diffTime = nextDueDate - today;
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            return diffDays >= 0 && diffDays <= 7;
+        });
+        
+        res.json(upcomingCards);
     });
 });
+
+// Helper function to calculate next due date
+function getNextDueDate(dueDay) {
+    const today = new Date();
+    let year = today.getFullYear();
+    let month = today.getMonth();
+    let nextDue = new Date(year, month, dueDay);
+    if (nextDue < today) {
+        // If this month's due date has passed, go to next month
+        month += 1;
+        if (month > 11) {
+            month = 0;
+            year += 1;
+        }
+        nextDue = new Date(year, month, dueDay);
+    }
+    return nextDue;
+}
 
 // Update card order
 app.put('/api/cards/order', (req, res) => {

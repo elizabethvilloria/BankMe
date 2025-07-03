@@ -182,9 +182,9 @@ class BankMeApp {
         
         // Count upcoming payments (due within 7 days)
         const upcomingPayments = this.cards.filter(card => {
-            const dueDate = new Date(card.due_date);
+            const nextDueDate = this.getNextDueDate(card.due_day);
             const today = new Date();
-            const diffTime = dueDate - today;
+            const diffTime = nextDueDate - today;
             const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
             return diffDays >= 0 && diffDays <= 7;
         }).length;
@@ -340,10 +340,18 @@ class BankMeApp {
                 sortedCards.sort((a, b) => parseFloat(a.credit_limit) - parseFloat(b.credit_limit));
                 break;
             case 'due-soon':
-                sortedCards.sort((a, b) => new Date(a.due_date) - new Date(b.due_date));
+                sortedCards.sort((a, b) => {
+                    const aNextDue = this.getNextDueDate(a.due_day);
+                    const bNextDue = this.getNextDueDate(b.due_day);
+                    return aNextDue - bNextDue;
+                });
                 break;
             case 'due-late':
-                sortedCards.sort((a, b) => new Date(b.due_date) - new Date(a.due_date));
+                sortedCards.sort((a, b) => {
+                    const aNextDue = this.getNextDueDate(a.due_day);
+                    const bNextDue = this.getNextDueDate(b.due_day);
+                    return bNextDue - aNextDue;
+                });
                 break;
             case 'custom':
             default:
