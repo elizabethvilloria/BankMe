@@ -136,6 +136,31 @@ class BankMeApp {
             e.preventDefault();
             this.addBill();
         });
+
+        // Edit modal handling
+        document.getElementById('close-edit-modal').addEventListener('click', () => {
+            this.hideEditModal();
+        });
+
+        document.getElementById('cancel-edit-btn').addEventListener('click', () => {
+            this.hideEditModal();
+        });
+
+        document.getElementById('edit-modal-overlay').addEventListener('click', (e) => {
+            if (e.target.id === 'edit-modal-overlay') {
+                this.hideEditModal();
+            }
+        });
+
+        document.getElementById('edit-card-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            this.updateCard();
+        });
+
+        // Edit last 4 digits input validation
+        document.getElementById('edit-card-last4').addEventListener('input', (e) => {
+            e.target.value = e.target.value.replace(/[^0-9]/g, '').slice(0, 4);
+        });
     }
 
     switchTab(tabName) {
@@ -478,6 +503,7 @@ class BankMeApp {
                 </div>
             </div>
             <div class="card-actions">
+                <button class="btn btn-sm btn-secondary" onclick="app.showEditModal(${card.id})">Edit</button>
                 <button class="btn btn-sm btn-secondary" onclick="app.showPaymentModal(${card.id})">Pay</button>
                 <button class="btn btn-sm btn-secondary" onclick="app.showChargeModal(${card.id})">Charge</button>
             </div>
@@ -732,6 +758,71 @@ class BankMeApp {
     hideModal() {
         document.getElementById('modal-overlay').classList.add('hidden');
         document.getElementById('card-form').reset();
+    }
+
+    showEditModal(cardId) {
+        const card = this.cards.find(c => c.id === cardId);
+        if (!card) return;
+
+        // Populate the edit form with current card data
+        document.getElementById('edit-card-id').value = card.id;
+        document.getElementById('edit-card-name').value = card.card_name;
+        document.getElementById('edit-bank-name').value = card.bank_name;
+        document.getElementById('edit-card-last4').value = card.last4 || '';
+        document.getElementById('edit-credit-limit').value = card.credit_limit;
+        document.getElementById('edit-current-balance').value = card.current_balance;
+        document.getElementById('edit-due-day').value = card.due_day;
+        document.getElementById('edit-interest-rate').value = card.interest_rate;
+        document.getElementById('edit-minimum-due').value = card.minimum_due || 25;
+
+        // Show the edit modal
+        document.getElementById('edit-modal-overlay').classList.remove('hidden');
+    }
+
+    hideEditModal() {
+        document.getElementById('edit-modal-overlay').classList.add('hidden');
+        document.getElementById('edit-card-form').reset();
+    }
+
+    async updateCard() {
+        const cardId = parseInt(document.getElementById('edit-card-id').value);
+        const cardData = {
+            card_name: document.getElementById('edit-card-name').value,
+            bank_name: document.getElementById('edit-bank-name').value,
+            last4: document.getElementById('edit-card-last4').value || null,
+            credit_limit: parseFloat(document.getElementById('edit-credit-limit').value),
+            current_balance: parseFloat(document.getElementById('edit-current-balance').value),
+            due_day: parseInt(document.getElementById('edit-due-day').value),
+            interest_rate: parseFloat(document.getElementById('edit-interest-rate').value),
+            minimum_due: parseFloat(document.getElementById('edit-minimum-due').value)
+        };
+
+        try {
+            const response = await fetch(`/api/cards/${cardId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(cardData)
+            });
+
+            if (response.ok) {
+                // Update the card in the local array
+                const cardIndex = this.cards.findIndex(card => card.id === cardId);
+                if (cardIndex !== -1) {
+                    this.cards[cardIndex] = { ...this.cards[cardIndex], ...cardData };
+                }
+                
+                this.hideEditModal();
+                this.updateTabContent();
+                this.showNotification('Credit card updated successfully!', 'success');
+            } else {
+                throw new Error('Failed to update card');
+            }
+        } catch (error) {
+            console.error('Error updating card:', error);
+            this.showNotification('Failed to update card. Please try again.', 'error');
+        }
     }
 
     async addCard() {
