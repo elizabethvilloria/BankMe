@@ -1,11 +1,11 @@
 const API_BASE_URL = '/api';
 
-const fetchCards = async () => {
+export const fetchCards = async () => {
     const response = await fetch(`${API_BASE_URL}/cards`);
     return response.json();
 };
 
-const addCard = async (cardData) => {
+export const addCard = async (cardData) => {
     const response = await fetch(`${API_BASE_URL}/cards`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

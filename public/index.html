@@ -26,132 +26,11 @@
 
         <!-- Main Content -->
         <main class="main-content">
-            <!-- Dashboard Tab -->
-            <div id="dashboard" class="tab-content active">
-                <div class="dashboard-grid">
-                    <div class="card summary-card">
-                        <h3>Total Credit Limit</h3>
-                        <p class="amount" id="total-limit">$0</p>
-                    </div>
-                    <div class="card summary-card">
-                        <h3>Total Balance</h3>
-                        <p class="amount" id="total-balance">$0</p>
-                    </div>
-                    <div class="card summary-card">
-                        <h3>Credit Utilization</h3>
-                        <p class="amount" id="utilization">0%</p>
-                    </div>
-                    <div class="card summary-card">
-                        <h3>Upcoming Payments</h3>
-                        <p class="amount" id="upcoming-payments">0</p>
-                    </div>
-                    <div class="card summary-card">
-                        <h3>Total Min Due</h3>
-                        <p class="amount" id="total-min-due">$0</p>
-                    </div>
-                </div>
-                
-                <div class="charts-section">
-                    <div class="card">
-                        <h3>Credit Card Balances</h3>
-                        <canvas id="balance-chart"></canvas>
-                    </div>
-                    <div class="card">
-                        <h3>Monthly Spending</h3>
-                        <canvas id="spending-chart"></canvas>
-                    </div>
-                </div>
+            <div class="toolbar">
+                <button id="add-card-btn" class="btn btn-primary">Add Card</button>
             </div>
-
-            <!-- Credit Cards Tab -->
-            <div id="cards" class="tab-content">
-                <div class="tab-header">
-                    <h2>Credit Cards</h2>
-                    <div class="card-actions">
-                        <button class="btn btn-secondary" id="add-payment-btn">Add Payment</button>
-                        <button class="btn btn-secondary" id="add-charge-btn">Add Charge</button>
-                        <button class="btn btn-primary" id="add-card-btn">Add New Card</button>
-                    </div>
-                </div>
-                <div class="sort-bar">
-                    <label for="card-sort">Sort by:</label>
-                    <select id="card-sort">
-                        <option value="custom">Custom (Drag & Drop)</option>
-                        <option value="az">Alphabetical (A-Z)</option>
-                        <option value="za">Alphabetical (Z-A)</option>
-                        <option value="debt-desc">Most Debt</option>
-                        <option value="debt-asc">Least Debt</option>
-                        <option value="limit-desc">Highest Limit</option>
-                        <option value="limit-asc">Lowest Limit</option>
-                        <option value="due-soon">Due Date (Soonest First)</option>
-                        <option value="due-late">Due Date (Latest First)</option>
-                    </select>
-                </div>
-                <div class="cards-grid" id="cards-container">
-                    <!-- Cards will be added here dynamically -->
-                </div>
-            </div>
-
-            <!-- Expenses Tab -->
-            <div id="expenses" class="tab-content">
-                <div class="tab-header">
-                    <h2>Expenses</h2>
-                    <button class="btn btn-primary" id="add-expense-btn">Add Expense</button>
-                </div>
-                
-                <div class="expenses-list" id="expenses-container">
-                    <!-- Expenses will be added here dynamically -->
-                </div>
-            </div>
-
-            <!-- Budget Tab -->
-            <div id="budget" class="tab-content">
-                <div class="tab-header">
-                    <h2>Budget Planning</h2>
-                    <button class="btn btn-primary" id="set-budget-btn">Set Budget</button>
-                </div>
-                
-                <div class="budget-overview">
-                    <div class="card">
-                        <h3>Monthly Budget</h3>
-                        <p class="amount" id="monthly-budget">$0</p>
-                    </div>
-                    <div class="card">
-                        <h3>Spent This Month</h3>
-                        <p class="amount" id="monthly-spent">$0</p>
-                    </div>
-                    <div class="card">
-                        <h3>Remaining</h3>
-                        <p class="amount" id="budget-remaining">$0</p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Bills Tab -->
-            <div id="bills" class="tab-content">
-                <div class="tab-header">
-                    <h2>Bills</h2>
-                    <button class="btn btn-primary" id="add-bill-btn">Add Bill</button>
-                </div>
-                
-                <div class="bills-overview">
-                    <div class="card">
-                        <h3>Total Due</h3>
-                        <p class="amount" id="total-due">$0</p>
-                    </div>
-                    <div class="card">
-                        <h3>Upcoming (30 days)</h3>
-                        <p class="amount" id="upcoming-bills">0</p>
-                    </div>
-                    <div class="card">
-                        <h3>Overdue</h3>
-                        <p class="amount" id="overdue-bills">0</p>
-                    </div>
-                </div>
-                
-                <div class="bills-list" id="bills-container">
-                    <!-- Bills will be added here dynamically -->
-                </div>
+            <div id="cards-container" class="cards-grid">
+                <!-- Cards will be rendered here -->
             </div>
         </main>
     </div>
@@ -493,8 +372,24 @@
         </div>
     </div>
 
-    <script src="js/api.js"></script>
-    <script src="js/ui.js"></script>
-    <script src="js/main.js"></script>
+    <!-- Add Card Modal -->
+    <div id="add-card-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-button" onclick="closeModal('add-card-modal')">&times;</span>
+            <h2>Add New Credit Card</h2>
+            <form id="add-card-form">
+                <input type="text" name="card_name" placeholder="Card Name" required>
+                <input type="text" name="bank_name" placeholder="Bank Name" required>
+                <input type="text" name="last4" placeholder="Last 4 Digits" required>
+                <input type="number" name="credit_limit" placeholder="Credit Limit" required>
+                <input type="number" name="current_balance" placeholder="Current Balance" required>
+                <input type="number" name="due_day" placeholder="Due Day of Month" required>
+                <input type="number" name="interest_rate" placeholder="Interest Rate" required>
+                <button type="submit" class="btn btn-primary">Save Card</button>
+            </form>
+        </div>
+    </div>
+
+    <script type="module" src="js/main.js"></script>
 </body>
 </html> 
