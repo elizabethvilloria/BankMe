@@ -14,4 +14,4 @@ export const addCard = async (cardData) => {
     return response.json();
 };
 
-// ... and so on for all other API calls 
+// ... and so on for all other API calls

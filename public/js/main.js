@@ -3,7 +3,7 @@ import { renderCards, showModal, closeModal } from './ui.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
     console.log('BankMe App Loaded');
-    
+
     const cards = await fetchCards();
     renderCards(cards);
 
@@ -15,13 +15,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         e.preventDefault();
         const formData = new FormData(addCardForm);
         const cardData = Object.fromEntries(formData.entries());
-        
+
         const newCard = await addCard(cardData);
-        
+
         if (newCard) {
             const cards = await fetchCards();
             renderCards(cards);
             closeModal('add-card-modal');
         }
     });
-}); 
+});

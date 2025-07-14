@@ -8,4 +8,4 @@ router.put('/:id', cardsController.updateCard);
 router.delete('/:id', cardsController.deleteCard);
 router.put('/order', cardsController.updateCardOrder);
 
-module.exports = router; 
+module.exports = router;

@@ -69,7 +69,7 @@ const initDatabase = () => {
 };
 
 const checkAndInsertSampleData = () => {
-    db.get("SELECT COUNT(*) as count FROM credit_cards", (err, row) => {
+    db.get('SELECT COUNT(*) as count FROM credit_cards', (err, row) => {
         if (err) {
             console.error('Error checking credit_cards count:', err.message);
             return;
@@ -79,7 +79,7 @@ const checkAndInsertSampleData = () => {
         }
     });
 
-    db.get("SELECT COUNT(*) as count FROM bills", (err, row) => {
+    db.get('SELECT COUNT(*) as count FROM bills', (err, row) => {
         if (err) {
             console.error('Error checking bills count:', err.message);
             return;
@@ -92,16 +92,40 @@ const checkAndInsertSampleData = () => {
 
 const insertSampleData = () => {
     const sampleCards = [
-        { name: 'Chase Sapphire Preferred', bank: 'Chase Bank', last4: '1234', limit: 10000, balance: 2500, dueDay: 15, interest: 18.99 },
-        { name: 'Bank of America Travel Rewards', bank: 'Bank of America', last4: '5678', limit: 8000, balance: 1200, dueDay: 20, interest: 16.99 },
+        {
+            name: 'Chase Sapphire Preferred',
+            bank: 'Chase Bank',
+            last4: '1234',
+            limit: 10000,
+            balance: 2500,
+            dueDay: 15,
+            interest: 18.99,
+        },
+        {
+            name: 'Bank of America Travel Rewards',
+            bank: 'Bank of America',
+            last4: '5678',
+            limit: 8000,
+            balance: 1200,
+            dueDay: 20,
+            interest: 16.99,
+        },
     ];
 
     const stmt = db.prepare(`INSERT INTO credit_cards 
         (card_name, bank_name, last4, credit_limit, current_balance, due_day, interest_rate) 
         VALUES (?, ?, ?, ?, ?, ?, ?)`);
 
-    sampleCards.forEach(card => {
-        stmt.run(card.name, card.bank, card.last4, card.limit, card.balance, card.dueDay, card.interest);
+    sampleCards.forEach((card) => {
+        stmt.run(
+            card.name,
+            card.bank,
+            card.last4,
+            card.limit,
+            card.balance,
+            card.dueDay,
+            card.interest
+        );
     });
 
     stmt.finalize(() => {
@@ -111,16 +135,37 @@ const insertSampleData = () => {
 
 const insertSampleBills = () => {
     const sampleBills = [
-        { name: 'Electric Bill', amount: 85.50, dueDate: '2024-02-15', category: 'Utilities', paid: 0, notes: 'Monthly electricity bill' },
-        { name: 'Netflix Subscription', amount: 15.99, dueDate: '2024-02-20', category: 'Entertainment', paid: 0, notes: 'Monthly streaming subscription' },
+        {
+            name: 'Electric Bill',
+            amount: 85.5,
+            dueDate: '2024-02-15',
+            category: 'Utilities',
+            paid: 0,
+            notes: 'Monthly electricity bill',
+        },
+        {
+            name: 'Netflix Subscription',
+            amount: 15.99,
+            dueDate: '2024-02-20',
+            category: 'Entertainment',
+            paid: 0,
+            notes: 'Monthly streaming subscription',
+        },
     ];
 
     const stmt = db.prepare(`INSERT INTO bills 
         (name, amount, due_date, category, is_paid, notes) 
         VALUES (?, ?, ?, ?, ?, ?)`);
 
-    sampleBills.forEach(bill => {
-        stmt.run(bill.name, bill.amount, bill.dueDate, bill.category, bill.paid, bill.notes);
+    sampleBills.forEach((bill) => {
+        stmt.run(
+            bill.name,
+            bill.amount,
+            bill.dueDate,
+            bill.category,
+            bill.paid,
+            bill.notes
+        );
     });
 
     stmt.finalize(() => {

@@ -17,18 +17,22 @@ const createBill = (req, res) => {
         INSERT INTO bills (name, amount, due_date, category, notes)
         VALUES (?, ?, ?, ?, ?)
     `;
-    db.run(sql, [name, amount, due_date, category, notes], function(err) {
+    db.run(sql, [name, amount, due_date, category, notes], function (err) {
         if (err) {
             res.status(500).json({ error: err.message });
             return;
         }
-        db.get('SELECT * FROM bills WHERE id = ?', [this.lastID], (err, row) => {
-            if (err) {
-                res.status(500).json({ error: err.message });
-                return;
+        db.get(
+            'SELECT * FROM bills WHERE id = ?',
+            [this.lastID],
+            (err, row) => {
+                if (err) {
+                    res.status(500).json({ error: err.message });
+                    return;
+                }
+                res.status(201).json(row);
             }
-            res.status(201).json(row);
-        });
+        );
     });
 };
 
@@ -40,28 +44,32 @@ const updateBill = (req, res) => {
         SET name = ?, amount = ?, due_date = ?, category = ?, is_paid = ?, notes = ?, updated_at = CURRENT_TIMESTAMP
         WHERE id = ?
     `;
-    db.run(sql, [name, amount, due_date, category, is_paid, notes, id], function(err) {
-        if (err) {
-            res.status(500).json({ error: err.message });
-            return;
-        }
-        if (this.changes === 0) {
-            res.status(404).json({ error: 'Bill not found' });
-            return;
-        }
-        db.get('SELECT * FROM bills WHERE id = ?', [id], (err, row) => {
+    db.run(
+        sql,
+        [name, amount, due_date, category, is_paid, notes, id],
+        function (err) {
             if (err) {
                 res.status(500).json({ error: err.message });
                 return;
             }
-            res.json(row);
-        });
-    });
+            if (this.changes === 0) {
+                res.status(404).json({ error: 'Bill not found' });
+                return;
+            }
+            db.get('SELECT * FROM bills WHERE id = ?', [id], (err, row) => {
+                if (err) {
+                    res.status(500).json({ error: err.message });
+                    return;
+                }
+                res.json(row);
+            });
+        }
+    );
 };
 
 const deleteBill = (req, res) => {
     const { id } = req.params;
-    db.run('DELETE FROM bills WHERE id = ?', [id], function(err) {
+    db.run('DELETE FROM bills WHERE id = ?', [id], function (err) {
         if (err) {
             res.status(500).json({ error: err.message });
             return;
@@ -86,19 +94,27 @@ const toggleBillPaid = (req, res) => {
             return;
         }
         const newStatus = row.is_paid ? 0 : 1;
-        db.run('UPDATE bills SET is_paid = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?', [newStatus, id], function(err) {
-            if (err) {
-                res.status(500).json({ error: err.message });
-                return;
-            }
-            db.get('SELECT * FROM bills WHERE id = ?', [id], (err, updatedRow) => {
+        db.run(
+            'UPDATE bills SET is_paid = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
+            [newStatus, id],
+            function (err) {
                 if (err) {
                     res.status(500).json({ error: err.message });
                     return;
                 }
-                res.json(updatedRow);
-            });
-        });
+                db.get(
+                    'SELECT * FROM bills WHERE id = ?',
+                    [id],
+                    (err, updatedRow) => {
+                        if (err) {
+                            res.status(500).json({ error: err.message });
+                            return;
+                        }
+                        res.json(updatedRow);
+                    }
+                );
+            }
+        );
     });
 };
 
@@ -125,4 +141,4 @@ module.exports = {
     deleteBill,
     toggleBillPaid,
     getUpcomingBills,
-}; 
+};

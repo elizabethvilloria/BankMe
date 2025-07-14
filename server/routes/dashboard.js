@@ -5,4 +5,4 @@ const dashboardController = require('../controllers/dashboardController');
 router.get('/', dashboardController.getDashboardSummary);
 router.get('/upcoming-payments', dashboardController.getUpcomingPayments);
 
-module.exports = router; 
+module.exports = router;

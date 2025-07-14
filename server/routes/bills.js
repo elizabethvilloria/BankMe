@@ -9,4 +9,4 @@ router.delete('/:id', billsController.deleteBill);
 router.patch('/:id/toggle', billsController.toggleBillPaid);
 router.get('/upcoming', billsController.getUpcomingBills);
 
-module.exports = router; 
+module.exports = router;

@@ -1,29 +1,30 @@
 {
-  "name": "bankme",
-  "version": "1.0.0",
-  "description": "A personal finance manager to track credit cards and expenses",
-  "main": "server/index.js",
-  "scripts": {
-    "start": "node server/index.js",
-    "dev": "nodemon server/index.js",
-    "init-db": "node database/init.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "keywords": [
-    "finance",
-    "credit-cards",
-    "budgeting",
-    "expense-tracking"
-  ],
-  "author": "Your Name",
-  "license": "MIT",
-  "dependencies": {
-    "express": "^4.18.2",
-    "sqlite3": "^5.1.6",
-    "cors": "^2.8.5",
-    "body-parser": "^1.20.2"
-  },
-  "devDependencies": {
-    "nodemon": "^3.0.1"
-  }
-} 
+    "name": "bankme",
+    "version": "1.0.0",
+    "description": "A personal finance manager to track credit cards and expenses",
+    "main": "server/index.js",
+    "scripts": {
+        "start": "node server/index.js",
+        "dev": "nodemon server/index.js",
+        "init-db": "node database/init.js",
+        "format": "prettier --write \"**/*.{js,json,css,md}\""
+    },
+    "keywords": [
+        "finance",
+        "credit-cards",
+        "budgeting",
+        "expense-tracking"
+    ],
+    "author": "Your Name",
+    "license": "MIT",
+    "dependencies": {
+        "body-parser": "^1.20.2",
+        "cors": "^2.8.5",
+        "express": "^4.18.2",
+        "sqlite3": "^5.1.6"
+    },
+    "devDependencies": {
+        "nodemon": "^3.0.1",
+        "prettier": "^3.6.2"
+    }
+}

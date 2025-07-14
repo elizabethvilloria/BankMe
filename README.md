@@ -5,6 +5,7 @@ A simple web app to help you keep track of your credit cards and get your financ
 ## What's This About?
 
 I was tired of:
+
 - Forgetting when my credit card payments were due
 - Not knowing how much I was spending on what
 - Having no clue about my overall financial health
@@ -14,18 +15,21 @@ So I built this to solve those problems! It's basically a personal finance dashb
 ## What It Does
 
 ### Credit Card Management
+
 - Add all your credit cards in one place
 - Track balances, limits, and due dates
 - See your credit utilization at a glance
 - Never miss a payment again
 
 ### Spending Tracking
+
 - Log your expenses and categorize them
 - See where your money is actually going
 - Set budgets and stick to them
 - Get insights into your spending habits
 
 ### Financial Health
+
 - Visual charts showing your progress
 - Debt payoff strategies
 - Monthly spending reports
@@ -33,7 +37,7 @@ So I built this to solve those problems! It's basically a personal finance dashb
 
 ## Tech Stuff
 
-- **Frontend**: HTML, CSS, JavaScript 
+- **Frontend**: HTML, CSS, JavaScript
 - **Backend**: Node.js with Express
 - **Database**: SQLite (because it's easy and works everywhere)
 - **Charts**: Chart.js for pretty graphs
@@ -41,28 +45,33 @@ So I built this to solve those problems! It's basically a personal finance dashb
 ## Getting Started
 
 ### Prerequisites
+
 - Node.js (version 14 or higher)
 - Git
 
 ### Setup
 
 1. Clone this repo:
+
 ```bash
 git clone <your-repo-url>
 cd BankMe
 ```
 
 2. Install the dependencies:
+
 ```bash
 npm install
 ```
 
 3. Set up the database:
+
 ```bash
 npm run init-db
 ```
 
 4. Start the server:
+
 ```bash
 npm run dev
 ```
@@ -85,40 +94,47 @@ BankMe/
 ## Database Tables
 
 ### Credit Cards
+
 - Basic info: name, bank, limit, balance
 - Due dates and interest rates
 - Payment history
 
 ### Transactions
+
 - What you spent money on
 - Categories (food, gas, shopping, etc.)
 - When you spent it
 
 ### Payments
+
 - Payment amounts and dates
 - Status tracking
 
 ## Development Plan
 
 ### Week 1: Foundation ✅
+
 - [x] Set up project structure
 - [x] Basic HTML/CSS layout
 - [x] Database design
 - [x] Server setup
 
 ### Week 2: Core Features
+
 - [ ] Add/edit credit cards
 - [ ] Basic dashboard
 - [ ] Payment tracking
 - [ ] Balance calculations
 
 ### Week 3: Cool Features
+
 - [ ] Expense categories
 - [ ] Charts and graphs
 - [ ] Budget planning
 - [ ] Payment reminders
 
 ### Week 4: Polish
+
 - [ ] Make it look better
 - [ ] Fix bugs
 - [ ] Test everything
@@ -146,4 +162,4 @@ MIT License - do whatever you want with it!
 
 ---
 
-**Built with ❤️ and lots of coffee ☕** 
+**Built with ❤️ and lots of coffee ☕**

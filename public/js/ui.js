@@ -18,11 +18,12 @@ export const renderCards = (cards) => {
     cardsContainer.innerHTML = '';
 
     if (cards.length === 0) {
-        cardsContainer.innerHTML = '<p>No cards found. Add one to get started!</p>';
+        cardsContainer.innerHTML =
+            '<p>No cards found. Add one to get started!</p>';
         return;
     }
 
-    cards.forEach(card => {
+    cards.forEach((card) => {
         const cardElement = document.createElement('div');
         cardElement.className = 'card';
         cardElement.innerHTML = `
@@ -34,4 +35,4 @@ export const renderCards = (cards) => {
         `;
         cardsContainer.appendChild(cardElement);
     });
-}; 
+};
