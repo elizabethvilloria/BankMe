@@ -1,34 +1,18 @@
-const sqlite3 = require('sqlite3').verbose();
-const path = require('path');
+const db = require('./config');
 
-// Create database directory if it doesn't exist
-const fs = require('fs');
-const dbDir = path.join(__dirname);
-if (!fs.existsSync(dbDir)) {
-    fs.mkdirSync(dbDir, { recursive: true });
-}
-
-// Connect to database
-const dbPath = path.join(__dirname, 'bankme.db');
-const db = new sqlite3.Database(dbPath, (err) => {
-    if (err) {
-        console.error('Error opening database:', err.message);
-        process.exit(1);
-    }
-    console.log('Connected to SQLite database');
-});
-
-// Initialize database tables
-function initDatabase() {
+const initDatabase = () => {
     const createCardsTable = `
         CREATE TABLE IF NOT EXISTS credit_cards (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             card_name TEXT NOT NULL,
             bank_name TEXT NOT NULL,
+            last4 TEXT,
             credit_limit REAL NOT NULL,
             current_balance REAL NOT NULL,
-            due_date TEXT NOT NULL,
+            due_day INTEGER NOT NULL,
             interest_rate REAL NOT NULL,
+            minimum_due REAL DEFAULT 25,
+            position INTEGER DEFAULT 0,
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
             updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
         )
@@ -59,121 +43,89 @@ function initDatabase() {
         )
     `;
 
+    const createBillsTable = `
+        CREATE TABLE IF NOT EXISTS bills (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            amount REAL NOT NULL,
+            due_date TEXT NOT NULL,
+            category TEXT NOT NULL,
+            is_paid BOOLEAN DEFAULT 0,
+            notes TEXT,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        )
+    `;
+
     db.serialize(() => {
-        // Create tables
-        db.run(createCardsTable, (err) => {
-            if (err) {
-                console.error('Error creating credit_cards table:', err.message);
-            } else {
-                console.log('✓ Credit cards table created');
-            }
+        db.run(createCardsTable);
+        db.run(createTransactionsTable);
+        db.run(createPaymentsTable);
+        db.run(createBillsTable, () => {
+            console.log('Database tables initialized');
+            checkAndInsertSampleData();
         });
-
-        db.run(createTransactionsTable, (err) => {
-            if (err) {
-                console.error('Error creating transactions table:', err.message);
-            } else {
-                console.log('✓ Transactions table created');
-            }
-        });
-
-        db.run(createPaymentsTable, (err) => {
-            if (err) {
-                console.error('Error creating payments table:', err.message);
-            } else {
-                console.log('✓ Payments table created');
-            }
-        });
-
-        // Add sample data
-        addSampleData();
     });
-}
+};
 
-// Add sample credit cards for demonstration
-function addSampleData() {
-    // Check if sample data already exists
-    db.get('SELECT COUNT(*) as count FROM credit_cards', [], (err, row) => {
+const checkAndInsertSampleData = () => {
+    db.get("SELECT COUNT(*) as count FROM credit_cards", (err, row) => {
         if (err) {
-            console.error('Error checking existing data:', err.message);
+            console.error('Error checking credit_cards count:', err.message);
             return;
         }
+        if (row.count === 0) {
+            insertSampleData();
+        }
+    });
 
-        if (row.count > 0) {
-            console.log('Sample data already exists, skipping...');
-            finish();
+    db.get("SELECT COUNT(*) as count FROM bills", (err, row) => {
+        if (err) {
+            console.error('Error checking bills count:', err.message);
             return;
         }
-
-        const sampleCards = [
-            {
-                card_name: 'Chase Freedom',
-                bank_name: 'Chase Bank',
-                credit_limit: 5000,
-                current_balance: 1250.50,
-                due_date: '2024-02-15',
-                interest_rate: 18.99
-            },
-            {
-                card_name: 'Amex Gold',
-                bank_name: 'American Express',
-                credit_limit: 10000,
-                current_balance: 3200.75,
-                due_date: '2024-02-20',
-                interest_rate: 16.99
-            },
-            {
-                card_name: 'Discover It',
-                bank_name: 'Discover Bank',
-                credit_limit: 3000,
-                current_balance: 450.25,
-                due_date: '2024-02-25',
-                interest_rate: 19.99
-            }
-        ];
-
-        const insertCard = db.prepare(`
-            INSERT INTO credit_cards (card_name, bank_name, credit_limit, current_balance, due_date, interest_rate)
-            VALUES (?, ?, ?, ?, ?, ?)
-        `);
-
-        sampleCards.forEach(card => {
-            insertCard.run([
-                card.card_name,
-                card.bank_name,
-                card.credit_limit,
-                card.current_balance,
-                card.due_date,
-                card.interest_rate
-            ], function(err) {
-                if (err) {
-                    console.error('Error inserting sample card:', err.message);
-                } else {
-                    console.log(`✓ Added sample card: ${card.card_name}`);
-                }
-            });
-        });
-
-        insertCard.finalize(() => {
-            console.log('\n🎉 Database initialized successfully!');
-            console.log('Sample credit cards have been added for demonstration.');
-            finish();
-        });
-    });
-}
-
-function finish() {
-    db.close((err) => {
-        if (err) {
-            console.error('Error closing database:', err.message);
-        } else {
-            console.log('Database connection closed');
+        if (row.count === 0) {
+            insertSampleBills();
         }
-        console.log('\nYou can now start the server with: npm run dev');
-        process.exit(0);
     });
-}
+};
 
-// Run initialization
-console.log('Initializing BankMe database...\n');
-initDatabase(); 
+const insertSampleData = () => {
+    const sampleCards = [
+        { name: 'Chase Sapphire Preferred', bank: 'Chase Bank', last4: '1234', limit: 10000, balance: 2500, dueDay: 15, interest: 18.99 },
+        { name: 'Bank of America Travel Rewards', bank: 'Bank of America', last4: '5678', limit: 8000, balance: 1200, dueDay: 20, interest: 16.99 },
+    ];
+
+    const stmt = db.prepare(`INSERT INTO credit_cards 
+        (card_name, bank_name, last4, credit_limit, current_balance, due_day, interest_rate) 
+        VALUES (?, ?, ?, ?, ?, ?, ?)`);
+
+    sampleCards.forEach(card => {
+        stmt.run(card.name, card.bank, card.last4, card.limit, card.balance, card.dueDay, card.interest);
+    });
+
+    stmt.finalize(() => {
+        console.log('Sample credit cards added.');
+    });
+};
+
+const insertSampleBills = () => {
+    const sampleBills = [
+        { name: 'Electric Bill', amount: 85.50, dueDate: '2024-02-15', category: 'Utilities', paid: 0, notes: 'Monthly electricity bill' },
+        { name: 'Netflix Subscription', amount: 15.99, dueDate: '2024-02-20', category: 'Entertainment', paid: 0, notes: 'Monthly streaming subscription' },
+    ];
+
+    const stmt = db.prepare(`INSERT INTO bills 
+        (name, amount, due_date, category, is_paid, notes) 
+        VALUES (?, ?, ?, ?, ?, ?)`);
+
+    sampleBills.forEach(bill => {
+        stmt.run(bill.name, bill.amount, bill.dueDate, bill.category, bill.paid, bill.notes);
+    });
+
+    stmt.finalize(() => {
+        console.log('Sample bills added.');
+    });
+};
+
+module.exports = initDatabase;

@@ -33,7 +33,7 @@ So I built this to solve those problems! It's basically a personal finance dashb
 
 ## Tech Stuff
 
-- **Frontend**: HTML, CSS, JavaScript (keeping it simple!)
+- **Frontend**: HTML, CSS, JavaScript 
 - **Backend**: Node.js with Express
 - **Database**: SQLite (because it's easy and works everywhere)
 - **Charts**: Chart.js for pretty graphs

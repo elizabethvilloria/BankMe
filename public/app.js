@@ -495,6 +495,10 @@ class BankMeApp {
                 </div>
                 <div class="detail">
                     <div class="detail-label">Due Date</div>
+                    <div class="detail-value">${this.getNextDueDate(card.due_day).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })}</div>
+                </div>
+                <div class="detail">
+                    <div class="detail-label">Due In</div>
                     <div class="detail-value ${this.getDueDateText(card.due_day).class}">${this.getDueDateText(card.due_day).text}</div>
                 </div>
                 <div class="detail">
