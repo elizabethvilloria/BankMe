@@ -35,9 +35,21 @@ document.addEventListener('DOMContentLoaded', () => {
                 <p><strong>Balance:</strong> $${card.balance}</p>
                 <p><strong>Due Date:</strong> ${new Date(card.due_date).toLocaleDateString()}</p>
                 <p><strong>Interest Rate:</strong> ${card.interest_rate}%</p>
+                <button onclick="deleteCard(${card.id})">Delete</button>
             `;
             cardsContainer.appendChild(cardElement);
         });
+    };
+
+    window.deleteCard = async (id) => {
+        if (confirm('Are you sure you want to delete this card?')) {
+            const response = await fetch(`/api/cards/${id}`, { method: 'DELETE' });
+            if (response.ok) {
+                fetchCards();
+            } else {
+                alert('Failed to delete card.');
+            }
+        }
     };
 
     const renderTransactions = (transactions) => {

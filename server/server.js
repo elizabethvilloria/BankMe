@@ -43,6 +43,29 @@ app.post('/api/cards', (req, res) => {
     });
 });
 
+app.put('/api/cards/:id', (req, res) => {
+    const { name, bank, card_limit, balance, due_date, interest_rate } = req.body;
+    const sql = 'UPDATE credit_cards SET name = ?, bank = ?, card_limit = ?, balance = ?, due_date = ?, interest_rate = ? WHERE id = ?';
+    db.run(sql, [name, bank, card_limit, balance, due_date, interest_rate, req.params.id], function(err) {
+        if (err) {
+            res.status(400).json({ "error": err.message });
+            return;
+        }
+        res.json({ message: "success", data: { id: req.params.id, ...req.body } });
+    });
+});
+
+app.delete('/api/cards/:id', (req, res) => {
+    const sql = 'DELETE FROM credit_cards WHERE id = ?';
+    db.run(sql, req.params.id, function(err) {
+        if (err) {
+            res.status(400).json({ "error": err.message });
+            return;
+        }
+        res.json({ message: "deleted", changes: this.changes });
+    });
+});
+
 // API routes for transactions
 app.get('/api/transactions', (req, res) => {
     db.all('SELECT * FROM transactions ORDER BY date DESC', [], (err, rows) => {
