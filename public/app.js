@@ -95,6 +95,28 @@ document.addEventListener('DOMContentLoaded', () => {
         paymentsContainer.appendChild(list);
     };
 
+    const renderSpendingChart = (transactions) => {
+        const ctx = document.getElementById('spending-chart').getContext('2d');
+        const spendingByCategory = transactions.reduce((acc, tx) => {
+            acc[tx.category] = (acc[tx.category] || 0) + tx.amount;
+            return acc;
+        }, {});
+
+        new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: Object.keys(spendingByCategory),
+                datasets: [{
+                    label: 'Spending by Category',
+                    data: Object.values(spendingByCategory),
+                    backgroundColor: [
+                        '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40'
+                    ]
+                }]
+            }
+        });
+    };
+
     addCardForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         const formData = new FormData(addCardForm);
@@ -120,7 +142,16 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    fetchCards();
-    fetchTransactions();
-    fetchPayments();
+    const init = async () => {
+        await fetchCards();
+        const txResponse = await fetch('/api/transactions');
+        const txResult = await txResponse.json();
+        if (txResult.message === 'success') {
+            renderTransactions(txResult.data);
+            renderSpendingChart(txResult.data);
+        }
+        await fetchPayments();
+    };
+
+    init();
 }); 
