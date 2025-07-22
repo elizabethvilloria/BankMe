@@ -1,12 +1,21 @@
 document.addEventListener('DOMContentLoaded', () => {
     const cardsContainer = document.getElementById('cards-container');
     const addCardForm = document.getElementById('add-card-form');
+    const transactionsContainer = document.getElementById('transactions-container');
 
     const fetchCards = async () => {
         const response = await fetch('/api/cards');
         const result = await response.json();
         if (result.message === 'success') {
             renderCards(result.data);
+        }
+    };
+
+    const fetchTransactions = async () => {
+        const response = await fetch('/api/transactions');
+        const result = await response.json();
+        if (result.message === 'success') {
+            renderTransactions(result.data);
         }
     };
 
@@ -29,6 +38,23 @@ document.addEventListener('DOMContentLoaded', () => {
             `;
             cardsContainer.appendChild(cardElement);
         });
+    };
+
+    const renderTransactions = (transactions) => {
+        transactionsContainer.innerHTML = '';
+        if (transactions.length === 0) {
+            transactionsContainer.innerHTML = '<p>No transactions yet.</p>';
+            return;
+        }
+        const list = document.createElement('ul');
+        transactions.forEach(tx => {
+            const item = document.createElement('li');
+            item.innerHTML = `
+                <span>${new Date(tx.date).toLocaleDateString()}: ${tx.description} - $${tx.amount} (${tx.category})</span>
+            `;
+            list.appendChild(item);
+        });
+        transactionsContainer.appendChild(list);
     };
 
     addCardForm.addEventListener('submit', async (e) => {
@@ -57,4 +83,5 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     fetchCards();
+    fetchTransactions();
 }); 
