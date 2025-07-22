@@ -43,6 +43,35 @@ app.post('/api/cards', (req, res) => {
     });
 });
 
+// API routes for transactions
+app.get('/api/transactions', (req, res) => {
+    db.all('SELECT * FROM transactions ORDER BY date DESC', [], (err, rows) => {
+        if (err) {
+            res.status(400).json({ "error": err.message });
+            return;
+        }
+        res.json({
+            "message": "success",
+            "data": rows
+        });
+    });
+});
+
+app.post('/api/transactions', (req, res) => {
+    const { card_id, description, amount, category, date } = req.body;
+    const sql = 'INSERT INTO transactions (card_id, description, amount, category, date) VALUES (?, ?, ?, ?, ?)';
+    db.run(sql, [card_id, description, amount, category, date], function(err) {
+        if (err) {
+            res.status(400).json({ "error": err.message });
+            return;
+        }
+        res.json({
+            "message": "success",
+            "data": { id: this.lastID, ...req.body }
+        });
+    });
+});
+
 app.listen(port, () => {
     console.log(`BankMe server listening at http://localhost:${port}`);
 }); 
