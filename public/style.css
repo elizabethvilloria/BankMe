@@ -20,7 +20,8 @@ main {
     grid-template-columns: 1fr 1fr;
     grid-template-areas:
         "cards-section add-card-section"
-        "transactions-section transactions-section";
+        "transactions-section transactions-section"
+        "payments-section payments-section";
     gap: 2rem;
 }
 
@@ -34,6 +35,10 @@ main {
 
 #transactions-section {
     grid-area: transactions-section;
+}
+
+#payments-section {
+    grid-area: payments-section;
 }
 
 h1, h2 {

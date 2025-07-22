@@ -2,6 +2,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const cardsContainer = document.getElementById('cards-container');
     const addCardForm = document.getElementById('add-card-form');
     const transactionsContainer = document.getElementById('transactions-container');
+    const paymentsContainer = document.getElementById('payments-container');
 
     const fetchCards = async () => {
         const response = await fetch('/api/cards');
@@ -16,6 +17,14 @@ document.addEventListener('DOMContentLoaded', () => {
         const result = await response.json();
         if (result.message === 'success') {
             renderTransactions(result.data);
+        }
+    };
+
+    const fetchPayments = async () => {
+        const response = await fetch('/api/payments');
+        const result = await response.json();
+        if (result.message === 'success') {
+            renderPayments(result.data);
         }
     };
 
@@ -69,6 +78,23 @@ document.addEventListener('DOMContentLoaded', () => {
         transactionsContainer.appendChild(list);
     };
 
+    const renderPayments = (payments) => {
+        paymentsContainer.innerHTML = '';
+        if (payments.length === 0) {
+            paymentsContainer.innerHTML = '<p>No payments yet.</p>';
+            return;
+        }
+        const list = document.createElement('ul');
+        payments.forEach(payment => {
+            const item = document.createElement('li');
+            item.innerHTML = `
+                <span>${new Date(payment.date).toLocaleDateString()}: Payment of $${payment.amount}</span>
+            `;
+            list.appendChild(item);
+        });
+        paymentsContainer.appendChild(list);
+    };
+
     addCardForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         const formData = new FormData(addCardForm);
@@ -96,4 +122,5 @@ document.addEventListener('DOMContentLoaded', () => {
 
     fetchCards();
     fetchTransactions();
+    fetchPayments();
 }); 
