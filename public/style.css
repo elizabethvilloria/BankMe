@@ -4,10 +4,66 @@ body {
     color: #333;
     line-height: 1.6;
     margin: 0;
-    padding: 20px;
+    padding: 0;
 }
 
-h1 {
+header {
+    background-color: #4a4a4a;
+    color: white;
+    padding: 1rem;
     text-align: center;
+}
+
+main {
+    padding: 1rem;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+}
+
+h1, h2 {
     color: #4a4a4a;
+}
+
+#cards-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1rem;
+}
+
+.card {
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 1rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+form {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    background: white;
+    padding: 1.5rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+input, button {
+    padding: 0.8rem;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 1rem;
+}
+
+button {
+    background-color: #5cb85c;
+    color: white;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+button:hover {
+    background-color: #4cae4c;
 } 

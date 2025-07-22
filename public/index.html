@@ -7,7 +7,27 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <h1>Welcome to BankMe</h1>
+    <header>
+        <h1>BankMe Dashboard</h1>
+    </header>
+    <main>
+        <section id="cards-section">
+            <h2>Your Credit Cards</h2>
+            <div id="cards-container"></div>
+        </section>
+        <section id="add-card-section">
+            <h2>Add a New Card</h2>
+            <form id="add-card-form">
+                <input type="text" name="name" placeholder="Card Name" required>
+                <input type="text" name="bank" placeholder="Bank" required>
+                <input type="number" name="card_limit" placeholder="Limit" required>
+                <input type="number" name="balance" placeholder="Current Balance" required>
+                <input type="date" name="due_date" placeholder="Due Date" required>
+                <input type="number" step="0.01" name="interest_rate" placeholder="Interest Rate" required>
+                <button type="submit">Add Card</button>
+            </form>
+        </section>
+    </main>
     <script src="app.js"></script>
 </body>
 </html> 
