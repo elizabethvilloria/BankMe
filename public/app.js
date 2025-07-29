@@ -1,42 +1,20 @@
+/* eslint-disable no-alert, no-undef */
+
 document.addEventListener('DOMContentLoaded', () => {
     const cardsContainer = document.getElementById('cards-container');
     const addCardForm = document.getElementById('add-card-form');
     const transactionsContainer = document.getElementById('transactions-container');
     const paymentsContainer = document.getElementById('payments-container');
 
-    const fetchCards = async () => {
-        const response = await fetch('/api/cards');
-        const result = await response.json();
-        if (result.message === 'success') {
-            renderCards(result.data);
-        }
-    };
-
-    const fetchTransactions = async () => {
-        const response = await fetch('/api/transactions');
-        const result = await response.json();
-        if (result.message === 'success') {
-            renderTransactions(result.data);
-        }
-    };
-
-    const fetchPayments = async () => {
-        const response = await fetch('/api/payments');
-        const result = await response.json();
-        if (result.message === 'success') {
-            renderPayments(result.data);
-        }
-    };
-
     const renderCards = (cards) => {
         cardsContainer.innerHTML = '';
         if (cards.length === 0) {
-            cardsContainer.innerHTML = '<p>No cards added yet. Add one using the form!</p>';
+            cardsContainer.innerHTML = '<p>No cards yet.</p>';
             return;
         }
-        cards.forEach(card => {
+        cards.forEach((card) => {
             const cardElement = document.createElement('div');
-            cardElement.classList.add('card');
+            cardElement.className = 'card';
             cardElement.innerHTML = `
                 <h3>${card.name}</h3>
                 <p><strong>Bank:</strong> ${card.bank}</p>
@@ -50,17 +28,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     };
 
-    window.deleteCard = async (id) => {
-        if (confirm('Are you sure you want to delete this card?')) {
-            const response = await fetch(`/api/cards/${id}`, { method: 'DELETE' });
-            if (response.ok) {
-                fetchCards();
-            } else {
-                alert('Failed to delete card.');
-            }
-        }
-    };
-
     const renderTransactions = (transactions) => {
         transactionsContainer.innerHTML = '';
         if (transactions.length === 0) {
@@ -68,7 +35,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
         const list = document.createElement('ul');
-        transactions.forEach(tx => {
+        transactions.forEach((tx) => {
             const item = document.createElement('li');
             item.innerHTML = `
                 <span>${new Date(tx.date).toLocaleDateString()}: ${tx.description} - $${tx.amount} (${tx.category})</span>
@@ -85,7 +52,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
         const list = document.createElement('ul');
-        payments.forEach(payment => {
+        payments.forEach((payment) => {
             const item = document.createElement('li');
             item.innerHTML = `
                 <span>${new Date(payment.date).toLocaleDateString()}: Payment of $${payment.amount}</span>
@@ -98,8 +65,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const renderSpendingChart = (transactions) => {
         const ctx = document.getElementById('spending-chart').getContext('2d');
         const spendingByCategory = transactions.reduce((acc, tx) => {
-            acc[tx.category] = (acc[tx.category] || 0) + tx.amount;
-            return acc;
+            const newAcc = { ...acc };
+            newAcc[tx.category] = (newAcc[tx.category] || 0) + tx.amount;
+            return newAcc;
         }, {});
 
         new Chart(ctx, {
@@ -110,30 +78,38 @@ document.addEventListener('DOMContentLoaded', () => {
                     label: 'Spending by Category',
                     data: Object.values(spendingByCategory),
                     backgroundColor: [
-                        '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40'
-                    ]
-                }]
-            }
+                        '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40',
+                    ],
+                }],
+            },
         });
+    };
+
+    const fetchCards = async () => {
+        const response = await fetch('/api/cards');
+        const result = await response.json();
+        if (result.message === 'success') {
+            renderCards(result.data);
+        }
+    };
+
+    const fetchPayments = async () => {
+        const response = await fetch('/api/payments');
+        const result = await response.json();
+        if (result.message === 'success') {
+            renderPayments(result.data);
+        }
     };
 
     addCardForm.addEventListener('submit', async (e) => {
         e.preventDefault();
-        const formData = new FormData(addCardForm);
-        const cardData = Object.fromEntries(formData.entries());
-        
-        cardData.card_limit = parseFloat(cardData.card_limit);
-        cardData.balance = parseFloat(cardData.balance);
-        cardData.interest_rate = parseFloat(cardData.interest_rate);
-
+        const formData = new FormData(e.target);
+        const data = Object.fromEntries(formData.entries());
         const response = await fetch('/api/cards', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(cardData)
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data),
         });
-
         if (response.ok) {
             addCardForm.reset();
             fetchCards();
@@ -141,6 +117,17 @@ document.addEventListener('DOMContentLoaded', () => {
             alert('Failed to add card.');
         }
     });
+
+    window.deleteCard = async (id) => {
+        if (confirm('Are you sure you want to delete this card?')) {
+            const response = await fetch(`/api/cards/${id}`, { method: 'DELETE' });
+            if (response.ok) {
+                fetchCards();
+            } else {
+                alert('Failed to delete card.');
+            }
+        }
+    };
 
     const init = async () => {
         await fetchCards();
@@ -154,4 +141,4 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     init();
-}); 
+});

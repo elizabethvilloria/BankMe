@@ -29,4 +29,4 @@ const server = app.listen(port, () => {
     console.log(`BankMe server listening at http://localhost:${port}`);
 });
 
-module.exports = server; 
+module.exports = server;

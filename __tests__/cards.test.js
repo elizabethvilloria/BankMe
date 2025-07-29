@@ -7,6 +7,7 @@ app.use(express.json());
 
 // Import routes
 const cardRoutes = require('../server/routes/cardRoutes');
+
 app.use('/api/cards', cardRoutes);
 
 // Setup test database
@@ -26,17 +27,15 @@ describe('Credit Card API', () => {
     });
 
     it('should create a new credit card', async () => {
-        const res = await request(server)
-            .post('/api/cards')
-            .send({
-                name: 'Test Card',
-                bank: 'Test Bank',
-                card_limit: 1000,
-                balance: 0,
-                due_date: '2024-12-31',
-                interest_rate: 19.99
-            });
+        const res = await request(server).post('/api/cards').send({
+            name: 'Test Card',
+            bank: 'Test Bank',
+            card_limit: 1000,
+            balance: 0,
+            due_date: '2024-12-31',
+            interest_rate: 19.99,
+        });
         expect(res.statusCode).toEqual(201);
         expect(res.body.data.name).toBe('Test Card');
     });
-}); 
+});

@@ -9,14 +9,12 @@ describe('Payment API', () => {
     });
 
     it('should create a new payment', async () => {
-        const res = await request(server)
-            .post('/api/payments')
-            .send({
-                card_id: 1,
-                amount: 50,
-                date: '2024-12-31'
-            });
+        const res = await request(server).post('/api/payments').send({
+            card_id: 1,
+            amount: 50,
+            date: '2024-12-31',
+        });
         expect(res.statusCode).toEqual(201);
         expect(res.body.data.amount).toBe(50);
     });
-}); 
+});

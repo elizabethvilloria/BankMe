@@ -97,7 +97,7 @@ const toggleBillPaid = (req, res) => {
         db.run(
             'UPDATE bills SET is_paid = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
             [newStatus, id],
-            function (err) {
+            (err) => {
                 if (err) {
                     res.status(500).json({ error: err.message });
                     return;
