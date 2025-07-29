@@ -20,6 +20,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <p><strong>Bank:</strong> ${card.bank}</p>
                 <p><strong>Limit:</strong> $${card.card_limit}</p>
                 <p><strong>Balance:</strong> $${card.balance}</p>
+                <p><strong>Utilization:</strong> ${((card.balance / card.card_limit) * 100).toFixed(2)}%</p>
                 <p><strong>Due Date:</strong> ${new Date(card.due_date).toLocaleDateString()}</p>
                 <p><strong>Interest Rate:</strong> ${card.interest_rate}%</p>
                 <button onclick="deleteCard(${card.id})">Delete</button>
