@@ -1,6 +1,7 @@
 const express = require('express');
 const AppError = require('./utils/appError');
 const globalErrorHandler = require('./middleware/errorHandler');
+const setupSwagger = require('./swagger');
 
 const cardRoutes = require('./routes/cardRoutes');
 const transactionRoutes = require('./routes/transactionRoutes');
@@ -11,6 +12,8 @@ const port = 3000;
 
 app.use(express.static('public'));
 app.use(express.json());
+
+setupSwagger(app);
 
 app.use('/api/cards', cardRoutes);
 app.use('/api/transactions', transactionRoutes);

@@ -9,6 +9,15 @@ const db = new sqlite3.Database('./database/bank.db', sqlite3.OPEN_READWRITE, (e
     if (err) console.error(err.message);
 });
 
+/**
+ * @swagger
+ * /api/cards:
+ *   get:
+ *     summary: Retrieve a list of credit cards
+ *     responses:
+ *       200:
+ *         description: A list of cards.
+ */
 router.get('/', catchAsync(async (req, res, next) => {
     db.all('SELECT * FROM credit_cards', [], (err, rows) => {
         if (err) return next(new AppError('Error fetching cards', 400));
@@ -16,6 +25,35 @@ router.get('/', catchAsync(async (req, res, next) => {
     });
 }));
 
+/**
+ * @swagger
+ * /api/cards:
+ *   post:
+ *     summary: Create a new credit card
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *               bank:
+ *                 type: string
+ *               card_limit:
+ *                 type: number
+ *               balance:
+ *                 type: number
+ *               due_date:
+ *                 type: string
+ *                 format: date
+ *               interest_rate:
+ *                 type: number
+ *     responses:
+ *       201:
+ *         description: Created
+ */
 router.post('/', catchAsync(async (req, res, next) => {
     const { name, bank, card_limit, balance, due_date, interest_rate } = req.body;
     const sql = 'INSERT INTO credit_cards (name, bank, card_limit, balance, due_date, interest_rate) VALUES (?, ?, ?, ?, ?, ?)';
