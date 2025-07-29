@@ -50,86 +50,80 @@ app.post('/api/cards', catchAsync(async (req, res, next) => {
     });
 }));
 
-app.put('/api/cards/:id', (req, res) => {
+app.put('/api/cards/:id', catchAsync(async (req, res, next) => {
     const { name, bank, card_limit, balance, due_date, interest_rate } = req.body;
     const sql = 'UPDATE credit_cards SET name = ?, bank = ?, card_limit = ?, balance = ?, due_date = ?, interest_rate = ? WHERE id = ?';
     db.run(sql, [name, bank, card_limit, balance, due_date, interest_rate, req.params.id], function(err) {
         if (err) {
-            res.status(400).json({ "error": err.message });
-            return;
+            return next(new AppError('Error updating card', 400));
         }
         res.json({ message: "success", data: { id: req.params.id, ...req.body } });
     });
-});
+}));
 
-app.delete('/api/cards/:id', (req, res) => {
+app.delete('/api/cards/:id', catchAsync(async (req, res, next) => {
     const sql = 'DELETE FROM credit_cards WHERE id = ?';
     db.run(sql, req.params.id, function(err) {
         if (err) {
-            res.status(400).json({ "error": err.message });
-            return;
+            return next(new AppError('Error deleting card', 400));
         }
         res.json({ message: "deleted", changes: this.changes });
     });
-});
+}));
 
 // API routes for transactions
-app.get('/api/transactions', (req, res) => {
+app.get('/api/transactions', catchAsync(async (req, res, next) => {
     db.all('SELECT * FROM transactions ORDER BY date DESC', [], (err, rows) => {
         if (err) {
-            res.status(400).json({ "error": err.message });
-            return;
+            return next(new AppError('Error fetching transactions', 400));
         }
         res.json({
             "message": "success",
             "data": rows
         });
     });
-});
+}));
 
-app.post('/api/transactions', (req, res) => {
+app.post('/api/transactions', catchAsync(async (req, res, next) => {
     const { card_id, description, amount, category, date } = req.body;
     const sql = 'INSERT INTO transactions (card_id, description, amount, category, date) VALUES (?, ?, ?, ?, ?)';
     db.run(sql, [card_id, description, amount, category, date], function(err) {
         if (err) {
-            res.status(400).json({ "error": err.message });
-            return;
+            return next(new AppError('Error creating transaction', 400));
         }
-        res.json({
+        res.status(201).json({
             "message": "success",
             "data": { id: this.lastID, ...req.body }
         });
     });
-});
+}));
 
 // API routes for payments
-app.get('/api/payments', (req, res) => {
+app.get('/api/payments', catchAsync(async (req, res, next) => {
     db.all('SELECT * FROM payments ORDER BY date DESC', [], (err, rows) => {
         if (err) {
-            res.status(400).json({ "error": err.message });
-            return;
+            return next(new AppError('Error fetching payments', 400));
         }
         res.json({
             "message": "success",
             "data": rows
         });
     });
-});
+}));
 
-app.post('/api/payments', (req, res) => {
+app.post('/api/payments', catchAsync(async (req, res, next) => {
     const { card_id, amount, date } = req.body;
     const sql = 'INSERT INTO payments (card_id, amount, date) VALUES (?, ?, ?)';
     db.run(sql, [card_id, amount, date], function(err) {
         if (err) {
-            res.status(400).json({ "error": err.message });
-            return;
+            return next(new AppError('Error creating payment', 400));
         }
-        res.json({
+        res.status(201).json({
             "message": "success",
             "data": { id: this.lastID, ...req.body }
         });
     });
-});
+}));
 
 app.all('*', (req, res, next) => {
     next(new AppError(`Can't find ${req.originalUrl} on this server!`, 404));
