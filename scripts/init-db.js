@@ -38,18 +38,17 @@ db.serialize(() => {
                         if (err) {
                             console.error(`Error applying migration ${file}:`, err);
                         } else {
-                            db.run("INSERT INTO migrations (name) VALUES (?)", [file]);
+                            db.run("INSERT INTO migrations (name) VALUES (?)", [file], () => {
+                                if (file === migrationFiles[migrationFiles.length - 1]) {
+                                    db.close();
+                                }
+                            });
                         }
                     });
+                } else if (file === migrationFiles[migrationFiles.length - 1]) {
+                    db.close();
                 }
             });
         });
     });
-});
-
-db.close((err) => {
-    if (err) {
-        console.error(err.message);
-    }
-    console.log('Finished migrations and closed the database connection.');
 }); 
