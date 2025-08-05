@@ -147,13 +147,12 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     window.deleteCard = async (id) => {
-        if (confirm('Are you sure you want to delete this card?')) {
-            const response = await fetch(`/api/cards/${id}`, { method: 'DELETE' });
-            if (response.ok) {
-                fetchCards();
-            } else {
-                alert('Failed to delete card.');
-            }
+        // No confirmation for quicker deletion!
+        const response = await fetch(`/api/cards/${id}`, { method: 'DELETE' });
+        if (response.ok) {
+            fetchCards();
+        } else {
+            alert('Failed to delete card.');
         }
     };
 
