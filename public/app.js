@@ -5,6 +5,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const addCardForm = document.getElementById('add-card-form');
     const transactionsContainer = document.getElementById('transactions-container');
     const paymentsContainer = document.getElementById('payments-container');
+    const billsContainer = document.getElementById('bills-container');
 
     const renderCards = (cards) => {
         cardsContainer.innerHTML = '';
@@ -63,6 +64,24 @@ document.addEventListener('DOMContentLoaded', () => {
         paymentsContainer.appendChild(list);
     };
 
+    const renderBills = (bills) => {
+        billsContainer.innerHTML = '';
+        if (bills.length === 0) {
+            billsContainer.innerHTML = '<p>No upcoming bills.</p>';
+            return;
+        }
+        const list = document.createElement('ul');
+        bills.forEach((bill) => {
+            const item = document.createElement('li');
+            item.innerHTML = `
+                <span>${bill.name} - $${bill.amount} (Due: ${new Date(bill.due_date).toLocaleDateString()})</span>
+                <button class="ml-4 p-2 rounded ${bill.is_paid ? 'bg-gray-400' : 'bg-green-500 text-white'}" onclick="toggleBillStatus(${bill.id}, ${bill.is_paid})">${bill.is_paid ? 'Paid' : 'Mark as Paid'}</button>
+            `;
+            list.appendChild(item);
+        });
+        billsContainer.appendChild(list);
+    };
+
     const renderSpendingChart = (transactions) => {
         const ctx = document.getElementById('spending-chart').getContext('2d');
         const spendingByCategory = transactions.reduce((acc, tx) => {
@@ -91,6 +110,14 @@ document.addEventListener('DOMContentLoaded', () => {
         const result = await response.json();
         if (result.message === 'success') {
             renderCards(result.data);
+        }
+    };
+
+    const fetchBills = async () => {
+        const response = await fetch('/api/bills');
+        const result = await response.json();
+        if (result.message === 'success') {
+            renderBills(result.data);
         }
     };
 
@@ -130,6 +157,19 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
+    window.toggleBillStatus = async (id, isPaid) => {
+        const response = await fetch(`/api/bills/${id}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ is_paid: !isPaid }),
+        });
+        if (response.ok) {
+            fetchBills();
+        } else {
+            alert('Failed to update bill status.');
+        }
+    };
+
     const init = async () => {
         await fetchCards();
         const txResponse = await fetch('/api/transactions');
@@ -139,6 +179,7 @@ document.addEventListener('DOMContentLoaded', () => {
             renderSpendingChart(txResult.data);
         }
         await fetchPayments();
+        await fetchBills();
     };
 
     init();
