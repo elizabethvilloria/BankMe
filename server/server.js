@@ -6,6 +6,7 @@ const setupSwagger = require('./swagger');
 const cardRoutes = require('./routes/cardRoutes');
 const transactionRoutes = require('./routes/transactionRoutes');
 const paymentRoutes = require('./routes/paymentRoutes');
+const billRoutes = require('./routes/billRoutes');
 
 const app = express();
 const port = 3000;
@@ -18,6 +19,7 @@ setupSwagger(app);
 app.use('/api/cards', cardRoutes);
 app.use('/api/transactions', transactionRoutes);
 app.use('/api/payments', paymentRoutes);
+app.use('/api/bills', billRoutes);
 
 app.all('*', (req, res, next) => {
     next(new AppError(`Can't find ${req.originalUrl} on this server!`, 404));
