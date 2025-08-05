@@ -1,0 +1,12 @@
+node_modules
+npm-debug.log
+.DS_Store
+.env
+.nvmrc
+.git
+.gitignore
+README.md
+__tests__
+jest.config.js
+.eslintrc.js
+.prettierrc.js 
