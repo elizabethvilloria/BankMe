@@ -40,7 +40,7 @@ document.addEventListener('DOMContentLoaded', () => {
         transactions.forEach((tx) => {
             const item = document.createElement('li');
             item.innerHTML = `
-                <span>${new Date(tx.date).toLocaleDateString()}: ${tx.description} - $${tx.amount} (${tx.category})</span>
+                <span>${new Date(tx.date || Date.now()).toLocaleDateString()}: ${tx.description} - $${tx.amount} (${tx.category || 'Uncategorized'})</span>
             `;
             list.appendChild(item);
         });
@@ -57,7 +57,7 @@ document.addEventListener('DOMContentLoaded', () => {
         payments.forEach((payment) => {
             const item = document.createElement('li');
             item.innerHTML = `
-                <span>${new Date(payment.date).toLocaleDateString()}: Payment of $${payment.amount}</span>
+                <span>${new Date(payment.date || Date.now()).toLocaleDateString()}: Payment of $${payment.amount}</span>
             `;
             list.appendChild(item);
         });
@@ -74,7 +74,7 @@ document.addEventListener('DOMContentLoaded', () => {
         bills.forEach((bill) => {
             const item = document.createElement('li');
             item.innerHTML = `
-                <span>${bill.name} - $${bill.amount} (Due: ${new Date(bill.due_date).toLocaleDateString()})</span>
+                <span>${bill.name} - $${bill.amount} (Due: ${new Date(bill.due_date || Date.now()).toLocaleDateString()})</span>
                 <button aria-label="toggle paid" class="ml-4 p-2 rounded ${bill.is_paid ? 'bg-gray-400' : 'bg-green-500 text-white'}" onclick="toggleBillStatus(${bill.id}, ${bill.is_paid})">${bill.is_paid ? 'Paid' : 'Mark as Paid'}</button>
                 <button aria-label="delete bill" class="ml-2 p-2 rounded bg-red-500 text-white" onclick="deleteBill(${bill.id})">Delete</button>
             `;

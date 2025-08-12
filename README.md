@@ -71,6 +71,21 @@ So I built this to solve those problems! It's basically a personal finance dashb
 
 To view the API documentation, start the server and go to `http://localhost:3000/api-docs`.
 
+## Environment
+
+Create a `.env` file (see `.env.example`) with:
+
+- `PORT` - server port (default 3000)
+- `DB_PATH` - path to sqlite db (default ./database/bank.db)
+
+## Health Check
+
+The server exposes `GET /health` returning:
+
+```json
+{ "status": "ok", "uptime": 12.34 }
+```
+
 ## License
 
 MIT License - do whatever you want with it!
