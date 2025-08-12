@@ -29,4 +29,14 @@ describe('Bills API', () => {
         expect(res.statusCode).toEqual(200);
         expect(res.body.data.is_paid).toBe(true);
     });
+
+    it('should delete a bill', async () => {
+        const created = await request(server)
+            .post('/api/bills')
+            .send({ name: 'Tmp Bill', amount: 10, due_date: '2024-12-31' });
+        const id = created.body.data.id;
+        const res = await request(server).delete(`/api/bills/${id}`);
+        expect(res.statusCode).toEqual(200);
+        expect(res.body.message).toBe('deleted');
+    });
 }); 

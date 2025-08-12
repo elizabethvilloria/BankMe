@@ -1,13 +1,9 @@
 const express = require('express');
-const sqlite3 = require('sqlite3');
 const AppError = require('../utils/appError');
 const catchAsync = require('../utils/catchAsync');
+const db = require('../db');
 
 const router = express.Router();
-
-const db = new sqlite3.Database('./database/bank.db', sqlite3.OPEN_READWRITE, (err) => {
-    if (err) console.error(err.message);
-});
 
 router.get('/', catchAsync(async (req, res, next) => {
     db.all('SELECT * FROM bills ORDER BY due_date DESC', [], (err, rows) => {
@@ -31,6 +27,14 @@ router.patch('/:id', catchAsync(async (req, res, next) => {
     db.run(sql, [isPaid, req.params.id], function (err) {
         if (err) return next(new AppError('Error updating bill', 400));
         return res.json({ message: "success", data: { id: req.params.id, ...req.body } });
+    });
+}));
+
+router.delete('/:id', catchAsync(async (req, res, next) => {
+    const sql = 'DELETE FROM bills WHERE id = ?';
+    db.run(sql, [req.params.id], function (err) {
+        if (err) return next(new AppError('Error deleting bill', 400));
+        return res.json({ message: 'deleted', changes: this.changes });
     });
 }));
 

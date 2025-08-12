@@ -1,4 +1,5 @@
 const express = require('express');
+require('dotenv').config();
 const AppError = require('./utils/appError');
 const globalErrorHandler = require('./middleware/errorHandler');
 const setupSwagger = require('./swagger');
@@ -9,12 +10,17 @@ const paymentRoutes = require('./routes/paymentRoutes');
 const billRoutes = require('./routes/billRoutes');
 
 const app = express();
-const port = 3000;
+const port = process.env.PORT || 3000;
 
 app.use(express.static('public'));
 app.use(express.json());
 
 setupSwagger(app);
+
+// Health check
+app.get('/health', (req, res) => {
+  res.json({ status: 'ok', uptime: process.uptime() });
+});
 
 app.use('/api/cards', cardRoutes);
 app.use('/api/transactions', transactionRoutes);

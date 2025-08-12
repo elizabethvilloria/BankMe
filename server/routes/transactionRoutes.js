@@ -1,17 +1,9 @@
 const express = require('express');
-const sqlite3 = require('sqlite3');
 const AppError = require('../utils/appError');
 const catchAsync = require('../utils/catchAsync');
+const db = require('../db');
 
 const router = express.Router();
-
-const db = new sqlite3.Database(
-    './database/bank.db',
-    sqlite3.OPEN_READWRITE,
-    (err) => {
-        if (err) console.error(err.message);
-    }
-);
 
 router.get(
     '/',

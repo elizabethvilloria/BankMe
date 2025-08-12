@@ -75,12 +75,15 @@ document.addEventListener('DOMContentLoaded', () => {
             const item = document.createElement('li');
             item.innerHTML = `
                 <span>${bill.name} - $${bill.amount} (Due: ${new Date(bill.due_date).toLocaleDateString()})</span>
-                <button class="ml-4 p-2 rounded ${bill.is_paid ? 'bg-gray-400' : 'bg-green-500 text-white'}" onclick="toggleBillStatus(${bill.id}, ${bill.is_paid})">${bill.is_paid ? 'Paid' : 'Mark as Paid'}</button>
+                <button aria-label="toggle paid" class="ml-4 p-2 rounded ${bill.is_paid ? 'bg-gray-400' : 'bg-green-500 text-white'}" onclick="toggleBillStatus(${bill.id}, ${bill.is_paid})">${bill.is_paid ? 'Paid' : 'Mark as Paid'}</button>
+                <button aria-label="delete bill" class="ml-2 p-2 rounded bg-red-500 text-white" onclick="deleteBill(${bill.id})">Delete</button>
             `;
             list.appendChild(item);
         });
         billsContainer.appendChild(list);
     };
+
+    let spendingChartInstance = null;
 
     const renderSpendingChart = (transactions) => {
         const ctx = document.getElementById('spending-chart').getContext('2d');
@@ -90,7 +93,11 @@ document.addEventListener('DOMContentLoaded', () => {
             return newAcc;
         }, {});
 
-        new Chart(ctx, {
+        if (spendingChartInstance) {
+            spendingChartInstance.destroy();
+        }
+
+        spendingChartInstance = new Chart(ctx, {
             type: 'doughnut',
             data: {
                 labels: Object.keys(spendingByCategory),
@@ -167,6 +174,13 @@ document.addEventListener('DOMContentLoaded', () => {
             fetchBills();
         } else {
             alert('Failed to update bill status.');
+        }
+    };
+
+    window.deleteBill = async (id) => {
+        if (window.confirm('Delete this bill?')) {
+            const res = await fetch(`/api/bills/${id}`, { method: 'DELETE' });
+            if (res.ok) fetchBills();
         }
     };
 

@@ -1,17 +1,9 @@
 const express = require('express');
-const sqlite3 = require('sqlite3');
 const AppError = require('../utils/appError');
 const catchAsync = require('../utils/catchAsync');
+const db = require('../db');
 
 const router = express.Router();
-
-const db = new sqlite3.Database(
-    './database/bank.db',
-    sqlite3.OPEN_READWRITE,
-    (err) => {
-        if (err) console.error(err.message);
-    }
-);
 
 /**
  * @swagger
@@ -60,10 +52,13 @@ router.get('/', catchAsync(async (req, res, next) => {
  */
 router.post('/', catchAsync(async (req, res, next) => {
     const {
- name, bank, card_limit: cardLimit, balance, due_date: dueDate, interest_rate: interestRate,
-} = req.body;
+      name, bank, card_limit: cardLimit, balance, due_date: dueDate, interest_rate: interestRate,
+    } = req.body;
+    if (!name || !bank || Number.isNaN(Number(cardLimit))) {
+        return next(new AppError('Validation error: name, bank and card_limit are required', 400));
+    }
     const sql = 'INSERT INTO credit_cards (name, bank, card_limit, balance, due_date, interest_rate) VALUES (?, ?, ?, ?, ?, ?)';
-    db.run(sql, [name, bank, cardLimit, balance, dueDate, interestRate], function (err) {
+    db.run(sql, [name, bank, cardLimit, balance ?? 0, dueDate, interestRate], function (err) {
         if (err) return next(new AppError('Error creating card', 400));
         return res.status(201).json({ message: "success", data: { id: this.lastID, ...req.body } });
     });
@@ -71,10 +66,13 @@ router.post('/', catchAsync(async (req, res, next) => {
 
 router.put('/:id', catchAsync(async (req, res, next) => {
     const {
- name, bank, card_limit: cardLimit, balance, due_date: dueDate, interest_rate: interestRate,
-} = req.body;
+      name, bank, card_limit: cardLimit, balance, due_date: dueDate, interest_rate: interestRate,
+    } = req.body;
+    if (!name || !bank || Number.isNaN(Number(cardLimit))) {
+        return next(new AppError('Validation error: name, bank and card_limit are required', 400));
+    }
     const sql = 'UPDATE credit_cards SET name = ?, bank = ?, card_limit = ?, balance = ?, due_date = ?, interest_rate = ? WHERE id = ?';
-    db.run(sql, [name, bank, cardLimit, balance, dueDate, interestRate, req.params.id], (err) => {
+    db.run(sql, [name, bank, cardLimit, balance ?? 0, dueDate, interestRate, req.params.id], (err) => {
         if (err) return next(new AppError('Error updating card', 400));
         return res.json({ message: "success", data: { id: req.params.id, ...req.body } });
     });
