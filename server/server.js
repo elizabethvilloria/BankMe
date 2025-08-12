@@ -1,5 +1,6 @@
 const express = require('express');
 require('dotenv').config();
+const cors = require('cors');
 const AppError = require('./utils/appError');
 const globalErrorHandler = require('./middleware/errorHandler');
 const setupSwagger = require('./swagger');
@@ -14,6 +15,7 @@ const app = express();
 const port = process.env.PORT || 3000;
 
 app.use(logger);
+app.use(cors({ origin: process.env.CORS_ORIGIN || '*', credentials: true }));
 app.use(express.static('public'));
 app.use(express.json());
 

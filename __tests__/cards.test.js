@@ -38,4 +38,12 @@ describe('Credit Card API', () => {
         expect(res.statusCode).toEqual(201);
         expect(res.body.data.name).toBe('Test Card');
     });
+
+    it('should validate missing fields', async () => {
+        const res = await request(server)
+            .post('/api/cards')
+            .send({ name: '', bank: '', card_limit: 'not-a-number' });
+        expect(res.statusCode).toBe(400);
+        expect(res.body.message).toMatch(/Validation error/);
+    });
 });

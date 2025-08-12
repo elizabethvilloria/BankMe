@@ -77,19 +77,8 @@ Create a `.env` file (see `.env.example`) with:
 
 - `PORT` - server port (default 3000)
 - `DB_PATH` - path to sqlite db (default ./database/bank.db)
+- `CORS_ORIGIN` - allowed origin for CORS (default *)
 
 ## Health Check
 
-The server exposes `GET /health` returning:
-
-```json
-{ "status": "ok", "uptime": 12.34 }
-```
-
-## License
-
-MIT License - do whatever you want with it!
-
----
-
-**Built with ❤️ and lots of coffee ☕**
+The server exposes `GET /health`
