@@ -3,6 +3,7 @@ require('dotenv').config();
 const AppError = require('./utils/appError');
 const globalErrorHandler = require('./middleware/errorHandler');
 const setupSwagger = require('./swagger');
+const logger = require('./middleware/logger');
 
 const cardRoutes = require('./routes/cardRoutes');
 const transactionRoutes = require('./routes/transactionRoutes');
@@ -12,6 +13,7 @@ const billRoutes = require('./routes/billRoutes');
 const app = express();
 const port = process.env.PORT || 3000;
 
+app.use(logger);
 app.use(express.static('public'));
 app.use(express.json());
 

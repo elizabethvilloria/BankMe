@@ -140,6 +140,9 @@ document.addEventListener('DOMContentLoaded', () => {
         e.preventDefault();
         const formData = new FormData(e.target);
         const data = Object.fromEntries(formData.entries());
+        if (data.card_limit) data.card_limit = Number(data.card_limit);
+        if (data.balance) data.balance = Number(data.balance);
+        if (data.interest_rate) data.interest_rate = Number(data.interest_rate);
         const response = await fetch('/api/cards', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
